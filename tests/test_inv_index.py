@@ -78,6 +78,10 @@ class InvIndexTest(unittest.TestCase):
 
     indices_slice = get_n_indices(indices, len(indices) + 1)
     self.assertEqual(len(indices_slice), len(indices), "get_n_indices returned more than the original indices count")
+    print(Term.get_header())
+    for i in sorted(indices_slice):
+      print(i)
+
 
   # NOTE: Here we only test the upper limit, we could be more detailed and test also for specific terms if desired
   def test03_correct_occurance_count(self):
@@ -110,7 +114,11 @@ class InvIndexTest(unittest.TestCase):
     indices = get_term_dict([doc1, doc2])
 
     docs = query_docs(indices, "information")
-    self.assertLessEqual(len(docs), indices["information"].count, "We should get at max a number of documents equal to the ones that 'information' exists in, as we currently support only simple match queries")
+    self.assertEqual(len(docs), indices["information"].count, "Simple query is not working: 'information' exists in both the documents")
+
+    doc_ids = query_docs(indices, ["information", "test"])
+    self.assertEqual(len(doc_ids), 2, "Query intersection is not working: 'information' and 'test' is found in both the documents, we should get both the docs")
+    print("\n" + str(doc_ids))
 
   @classmethod
   def tearDownClass(cls):

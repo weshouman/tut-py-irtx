@@ -122,4 +122,56 @@ def get_n_indices(indices, n = 10):
 
   return indices_slice
 
+def query_docs(indices, text):
+  if isinstance(text, str):
+    text_list = [text]
+  elif isinstance(text, list):
+    text_list = text
+  else:
+    raise("Unexpected query type")
+
+  if len(text_list) < 1:
+    return []
+  else:
+    intersection = []
+    term_list = []
+
+    for text in text_list:
+      if text in indices.keys():
+        term_list.append(indices[text])
+
+    if len(term_list) > 0:
+      intersection = term_list[0].occurances
+
+      for curr_term in term_list[1:]:
+        curr_o = curr_term.occurances
+        intersection = get_intersection(curr_o, intersection)
+
+    return intersection
+
+def get_intersection(docs1, docs2):
+  # surprisingly, that doesn't save time
+  # if docs1[0] > docs2[-1] or docs2[0] > docs1[-1]:
+  #   return []
+
+  iter1 = iter(docs1)
+  iter2 = iter(docs2)
+
+  intersection = []
+  try:
+    i = next(iter1)
+    j = next(iter2)
+    while True:
+      if i == j:
+        intersection.append(i)
+        i = next(iter1)
+        j = next(iter2)
+      if i < j:
+        i = next(iter1)
+      if i > j:
+        j = next(iter2)
+  except StopIteration as ex:
+    pass
+
+  return intersection
 
