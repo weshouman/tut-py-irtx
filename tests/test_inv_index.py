@@ -32,18 +32,20 @@ class InvIndexTest(unittest.TestCase):
     doc1 = Doc(text=stub_doc1, index=id1)
     doc2 = Doc(text=stub_doc2, index=id2)
 
-    self.assertIsInstance(get_terms(Doc(text="")), list, 'get_terms("") returned non list')
-    self.assertIsInstance(get_term_dict([]), dict, 'get_term_dict([]) returned non dict')
+    ii   = InvertedIndex()
 
-    indices = get_term_dict(doc1)
-    self.assertIsInstance(indices, dict, "get_term_dict(doc1) returned non dict")
+    self.assertIsInstance(ii.get_terms(Doc(text="")), list, 'get_terms("") returned non list')
+    self.assertIsInstance(ii.build_indices([]), dict, 'build_indices([]) returned non dict')
+
+    indices = ii.build_indices(doc1)
+    self.assertIsInstance(indices, dict, "build_indices(doc1) returned non dict")
 
     self.assertEqual(len(indices), doc1_term_count)
 
     self.assertTrue("hello" in indices, "index hello is not created")
     self.assertListEqual(indices["hello"].occurances, [id1], "index hello is not set correctly")
 
-    indices = get_term_dict([doc1, doc2])
+    indices = ii.build_indices([doc1, doc2])
 
     self.assertTrue("hello" in indices, "index hello is not created")
     self.assertListEqual(indices["hello"].occurances, [id1], "index hello is not set correctly")
@@ -65,19 +67,21 @@ class InvIndexTest(unittest.TestCase):
     doc1 = Doc(text=stub_doc1, index=id1)
     doc2 = Doc(text=stub_doc2, index=id2)
 
-    indices = get_term_dict([doc1, doc2])
+    ii   = InvertedIndex()
 
-    indices_slice = get_n_indices(indices, n)
+    indices = ii.build_indices([doc1, doc2])
+
+    indices_slice = ii.slice_n_indices(indices, n)
     # it should return equal or less, but for this example, we know that the doc has more than n terms
     # thus it's sufficient
-    self.assertEqual(len(indices_slice), n, "get_n_indices returned unexpected number of indices")
+    self.assertEqual(len(indices_slice), n, "slice_n_indices returned unexpected number of indices")
 
     # enable for debugging only
     # for i in indices_slice:
     #   print(i.text, i.occurances, i.count)
 
-    indices_slice = get_n_indices(indices, len(indices) + 1)
-    self.assertEqual(len(indices_slice), len(indices), "get_n_indices returned more than the original indices count")
+    indices_slice = ii.slice_n_indices(indices, len(indices) + 1)
+    self.assertEqual(len(indices_slice), len(indices), "slice_n_indices returned more than the original indices count")
     print(Term.get_header())
     for i in sorted(indices_slice):
       print(i)
@@ -92,16 +96,14 @@ class InvIndexTest(unittest.TestCase):
     doc1 = Doc(text=stub_doc1, index=id1)
     doc2 = Doc(text=stub_doc2, index=id2)
 
-    indices = get_term_dict([doc1, doc2])
+    ii   = InvertedIndex()
 
-    indices_slice = get_n_indices(indices, len(indices) + 1)
+    indices = ii.build_indices([doc1, doc2])
+
+    indices_slice = ii.slice_n_indices(indices, len(indices) + 1)
     for i in sorted(indices_slice):
       err = f"the term '{i.text}' got assigned more than the number of given documents, most probably the term showed more than the doc count"
       self.assertLessEqual(i.count, 2, err)
-
-  def tearDown(self):
-    """Triggered after each test"""
-    logging.debug("tearDown is triggered")
 
   def test04_query_test(self):
     """query() shall return relevant documents to the given term"""
@@ -111,14 +113,38 @@ class InvIndexTest(unittest.TestCase):
     doc1 = Doc(text=stub_doc1, index=id1)
     doc2 = Doc(text=stub_doc2, index=id2)
 
-    indices = get_term_dict([doc1, doc2])
+    ii   = InvertedIndex()
 
-    docs = query_docs(indices, "information")
-    self.assertEqual(len(docs), indices["information"].count, "Simple query is not working: 'information' exists in both the documents")
+    indices = ii.build_indices([doc1, doc2])
 
-    doc_ids = query_docs(indices, ["information", "test"])
-    self.assertEqual(len(doc_ids), 2, "Query intersection is not working: 'information' and 'test' is found in both the documents, we should get both the docs")
-    print("\n" + str(doc_ids))
+    sample = "information"
+    docs = ii.query_docs(indices, sample)
+    self.assertEqual(len(docs), indices[sample].count, "Simple query is not working: 'information' exists in both the documents")
+
+    samples = ["infromation", "test"]
+    docs = ii.query_docs(indices, samples)
+    self.assertEqual(len(docs), 2, "Query intersection is not working: 'information' and 'test' is found in both the documents, we should get both the docs")
+
+    logging.debug("\n")
+    logging.debug(f"{samples} were found in the following docs\n---")
+    logging.debug("---\n".join([ doc.index + ": " + doc.text for doc in docs]))
+    logging.debug("---")
+
+  def test05_regex_docs(self):
+    ii   = InvertedIndex()
+
+    doc1 = Doc(text=stub_doc1, index=stub_doc1_id)
+    doc2 = Doc(text=stub_doc2, index=stub_doc2_id)
+
+    indices = ii.build_indices([doc1, doc2])
+
+    matches = ii._regex_docs("a.*")
+    self.assertEqual(len(matches), 2, "regex_docs('a.*') should match both the docs")
+    logging.debug([m.index for m in matches])
+
+  def tearDown(self):
+    """Triggered after each test"""
+    logging.debug("tearDown is triggered")
 
   @classmethod
   def tearDownClass(cls):
