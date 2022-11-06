@@ -24,8 +24,8 @@ class InvIndexTest(unittest.TestCase):
     """Triggered before each test"""
     logging.debug("setUp is triggered")
 
-  def test01_doc1(self):
-    print("get_term_dict output...")
+  def test01_inverted_index_generation(self):
+    """The inverted index is correctly generated"""
 
     id1  = stub_doc1_id
     id2  = stub_doc2_id
@@ -37,7 +37,6 @@ class InvIndexTest(unittest.TestCase):
 
     indices = get_term_dict(doc1)
     self.assertIsInstance(indices, dict, "get_term_dict(doc1) returned non dict")
-    print(indices)
 
     self.assertEqual(len(indices), doc1_term_count)
 
@@ -50,13 +49,15 @@ class InvIndexTest(unittest.TestCase):
     self.assertListEqual(indices["hello"].occurances, [id1], "index hello is not set correctly")
 
     self.assertTrue("test" in indices, "index test is not created")
-    self.assertListEqual(indices["test"].occurances, [id1, id2], "index test is not set correctly")
+    # the docs shall get sorted, thus id2 shall preceed id1
+    self.assertListEqual(indices["test"].occurances, [id2, id1], "index test is not set correctly")
 
     self.assertTrue("Hello" not in indices, "index Hello is created")
+    self.assertNotEqual(len(indices), 44, "commas and dots are not stripped from the string, thus some terms are stored multiple times")
     self.assertEqual(len(indices), doc1_and_doc2_term_count)
 
   def test02_correct_index_slicing(self):
-    print("show_some_terms")
+    """Slicing the dictionary works fine"""
 
     n    = 10
     id1  = stub_doc1_id
@@ -80,7 +81,7 @@ class InvIndexTest(unittest.TestCase):
 
   # NOTE: Here we only test the upper limit, we could be more detailed and test also for specific terms if desired
   def test03_correct_occurance_count(self):
-    print("no duplicates in occruance count")
+    """Occruances are unique"""
 
     id1  = stub_doc1_id
     id2  = stub_doc2_id
@@ -97,6 +98,19 @@ class InvIndexTest(unittest.TestCase):
   def tearDown(self):
     """Triggered after each test"""
     logging.debug("tearDown is triggered")
+
+  def test04_query_test(self):
+    """query() shall return relevant documents to the given term"""
+
+    id1  = stub_doc1_id
+    id2  = stub_doc2_id
+    doc1 = Doc(text=stub_doc1, index=id1)
+    doc2 = Doc(text=stub_doc2, index=id2)
+
+    indices = get_term_dict([doc1, doc2])
+
+    docs = query_docs(indices, "information")
+    self.assertLessEqual(len(docs), indices["information"].count, "We should get at max a number of documents equal to the ones that 'information' exists in, as we currently support only simple match queries")
 
   @classmethod
   def tearDownClass(cls):

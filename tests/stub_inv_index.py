@@ -12,5 +12,5 @@ Information retrieval is about capturing information from structured text.
 Text mining is about capturing information from unstructured text.
 """
 stub_doc2_id = "1451"
-doc1_and_doc2_term_count = 44
+doc1_and_doc2_term_count = 41
 
