@@ -32,31 +32,35 @@ class InvIndexTest(unittest.TestCase):
     doc1 = Doc(text=stub_doc1, index=id1)
     doc2 = Doc(text=stub_doc2, index=id2)
 
-    ii   = InvertedIndex()
+    ii   = InvertedIndex(Doc(text=""))
 
-    self.assertIsInstance(ii.get_terms(Doc(text="")), list, 'get_terms("") returned non list')
-    self.assertIsInstance(ii.build_indices([]), dict, 'build_indices([]) returned non dict')
+    self.assertIsInstance(ii.fetch_terms(Doc("")), list, 'get_terms("") returned non list')
 
-    indices = ii.build_indices(doc1)
-    self.assertIsInstance(indices, dict, "build_indices(doc1) returned non dict")
+    ii.set_docs([])
+    self.assertIsInstance(ii.build_inv_index(force=True), dict, 'build_inv_index([]) returned non dict')
 
-    self.assertEqual(len(indices), doc1_term_count)
+    ii.set_docs(doc1)
+    inv_index = ii.build_inv_index(force=True)
+    self.assertIsInstance(inv_index, dict, "build_inv_index returned non dict")
 
-    self.assertTrue("hello" in indices, "index hello is not created")
-    self.assertListEqual(indices["hello"].occurances, [id1], "index hello is not set correctly")
+    self.assertEqual(len(inv_index), doc1_term_count)
 
-    indices = ii.build_indices([doc1, doc2])
+    self.assertTrue("hello" in inv_index, "index hello is not created")
+    self.assertListEqual(inv_index["hello"].occurances, [id1], "index hello is not set correctly")
 
-    self.assertTrue("hello" in indices, "index hello is not created")
-    self.assertListEqual(indices["hello"].occurances, [id1], "index hello is not set correctly")
+    ii.set_docs([doc1, doc2])
+    inv_index = ii.build_inv_index(force=True)
 
-    self.assertTrue("test" in indices, "index test is not created")
+    self.assertTrue("hello" in inv_index, "index hello is not created")
+    self.assertListEqual(inv_index["hello"].occurances, [id1], "index hello is not set correctly")
+
+    self.assertTrue("test" in inv_index, "index test is not created")
     # the docs shall get sorted, thus id2 shall preceed id1
-    self.assertListEqual(indices["test"].occurances, [id2, id1], "index test is not set correctly")
+    self.assertListEqual(inv_index["test"].occurances, [id2, id1], "index test is not set correctly")
 
-    self.assertTrue("Hello" not in indices, "index Hello is created")
-    self.assertNotEqual(len(indices), 44, "commas and dots are not stripped from the string, thus some terms are stored multiple times")
-    self.assertEqual(len(indices), doc1_and_doc2_term_count)
+    self.assertTrue("Hello" not in inv_index, "index Hello is created")
+    self.assertNotEqual(len(inv_index), 44, "commas and dots are not stripped from the string, thus some terms are stored multiple times")
+    self.assertEqual(len(inv_index), doc1_and_doc2_term_count)
 
   def test02_correct_index_slicing(self):
     """Slicing the dictionary works fine"""
@@ -67,21 +71,21 @@ class InvIndexTest(unittest.TestCase):
     doc1 = Doc(text=stub_doc1, index=id1)
     doc2 = Doc(text=stub_doc2, index=id2)
 
-    ii   = InvertedIndex()
+    ii   = InvertedIndex([doc1, doc2])
 
-    indices = ii.build_indices([doc1, doc2])
+    inv_index = ii.build_inv_index()
 
-    indices_slice = ii.slice_n_indices(indices, n)
+    indices_slice = ii.get_inv_index_slice(n)
     # it should return equal or less, but for this example, we know that the doc has more than n terms
     # thus it's sufficient
-    self.assertEqual(len(indices_slice), n, "slice_n_indices returned unexpected number of indices")
+    self.assertEqual(len(indices_slice), n, "get_inv_index_slice returned unexpected number of inv_index")
 
     # enable for debugging only
     # for i in indices_slice:
     #   print(i.text, i.occurances, i.count)
 
-    indices_slice = ii.slice_n_indices(indices, len(indices) + 1)
-    self.assertEqual(len(indices_slice), len(indices), "slice_n_indices returned more than the original indices count")
+    indices_slice = ii.get_inv_index_slice(len(inv_index) + 1)
+    self.assertEqual(len(indices_slice), len(inv_index), "get_inv_index_slice returned more than the original inv_index count")
     print(Term.get_header())
     for i in sorted(indices_slice):
       print(i)
@@ -96,11 +100,11 @@ class InvIndexTest(unittest.TestCase):
     doc1 = Doc(text=stub_doc1, index=id1)
     doc2 = Doc(text=stub_doc2, index=id2)
 
-    ii   = InvertedIndex()
+    ii   = InvertedIndex([doc1, doc2])
 
-    indices = ii.build_indices([doc1, doc2])
+    inv_index = ii.build_inv_index()
 
-    indices_slice = ii.slice_n_indices(indices, len(indices) + 1)
+    indices_slice = ii.get_inv_index_slice(len(inv_index) + 1)
     for i in sorted(indices_slice):
       err = f"the term '{i.text}' got assigned more than the number of given documents, most probably the term showed more than the doc count"
       self.assertLessEqual(i.count, 2, err)
@@ -113,16 +117,16 @@ class InvIndexTest(unittest.TestCase):
     doc1 = Doc(text=stub_doc1, index=id1)
     doc2 = Doc(text=stub_doc2, index=id2)
 
-    ii   = InvertedIndex()
+    ii   = InvertedIndex([doc1, doc2])
 
-    indices = ii.build_indices([doc1, doc2])
+    inv_index = ii.build_inv_index()
 
     sample = "information"
-    docs = ii.query_docs(indices, sample)
-    self.assertEqual(len(docs), indices[sample].count, "Simple query is not working: 'information' exists in both the documents")
+    docs = ii.query_intersection(sample)
+    self.assertEqual(len(docs), inv_index[sample].count, "Simple query is not working: 'information' exists in both the documents")
 
     samples = ["infromation", "test"]
-    docs = ii.query_docs(indices, samples)
+    docs = ii.query_intersection(samples)
     self.assertEqual(len(docs), 2, "Query intersection is not working: 'information' and 'test' is found in both the documents, we should get both the docs")
 
     logging.debug("\n")
@@ -131,12 +135,12 @@ class InvIndexTest(unittest.TestCase):
     logging.debug("---")
 
   def test05_regex_docs(self):
-    ii   = InvertedIndex()
-
     doc1 = Doc(text=stub_doc1, index=stub_doc1_id)
     doc2 = Doc(text=stub_doc2, index=stub_doc2_id)
 
-    indices = ii.build_indices([doc1, doc2])
+    ii   = InvertedIndex([doc1, doc2])
+
+    inv_index = ii.build_inv_index()
 
     matches = ii._regex_docs("a.*")
     self.assertEqual(len(matches), 2, "regex_docs('a.*') should match both the docs")
