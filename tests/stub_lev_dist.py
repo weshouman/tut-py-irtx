@@ -1,0 +1,6 @@
+stub_word1 = "last"
+stub_word2 = "rats"
+stub_word3 = "yellow"
+stub_word4 = "panda"
+stub_word5 = "bat"
+stub_word6 = "batman"
