@@ -13,7 +13,7 @@ def tearDownModule():
   """Triggered after all module tests"""
   logging.debug("tearDownModule is triggered")
 
-class InvIndexTest(unittest.TestCase):
+class EditDistTest(unittest.TestCase):
 
   @classmethod
   def setUpClass(cls):
