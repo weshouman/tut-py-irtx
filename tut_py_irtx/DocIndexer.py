@@ -1,3 +1,5 @@
+import logging
+
 from tut_py_irtx.Indexer import *
 
 class DocIndexer(Indexer):
@@ -7,6 +9,8 @@ class DocIndexer(Indexer):
 
   def build(self, force=False):
     """a doc dictionary to capture the dictionary given a document index"""
+    logging.info("Building Document Index")
+
     if (force or self.is_index_built == False):
       self.index = {}
       for doc in self.doc_list:

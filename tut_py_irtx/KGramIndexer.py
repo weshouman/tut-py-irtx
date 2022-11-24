@@ -93,6 +93,8 @@ class KGramIndexer(Indexer):
 
   def build(self, force=False):
     """Build the KGram indices of the given doc(s) and return it"""
+    logging.info("Building KGram Index")
+
     if (force or self.is_index_built == False):
       self.index = {}
       for doc in self.doc_list:

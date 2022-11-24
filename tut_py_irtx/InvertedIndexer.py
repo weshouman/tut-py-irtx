@@ -10,6 +10,8 @@ class InvertedIndexer(Indexer):
 
   def build(self, force=False):
     """Build the inverted indices of the given doc(s) and return it"""
+    logging.info("Building Inverted Index")
+
     if (force or self.is_index_built == False):
       self.index = {}
       for doc in self.doc_list:
