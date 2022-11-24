@@ -1,6 +1,7 @@
 import logging
 import unittest
 import xmlrunner
+import cProfile
 
 from tut_py_irtx.IndexController import *
 from tut_py_irtx.InvertedIndexer import *
@@ -101,6 +102,10 @@ class KGramIndexTest(unittest.TestCase):
     docs = ic.query_intersection_wildcards(sample)
     self.assertEqual(len(docs), 2, "Simple query is not working: 'information' exists in both the documents")
 
+    samples = ["hello", "inf*"]
+    docs = ic.query_intersection_wildcards(samples)
+    self.assertEqual(len(docs), 1, "Simple query is not working: {samples} exists in a single documents")
+
     samples = ["*nf*", "*est"]
     docs = ic.query_intersection_wildcards(samples)
     self.assertEqual(len(docs), 2, "Query intersection is not working: 'information' and 'test' is found in both the documents, we should get both the docs")
@@ -117,8 +122,66 @@ class KGramIndexTest(unittest.TestCase):
     kgram_index["at"] = Gram("at", ["cat"])
     kgram_index["t$"] = Gram("t$", ["cat"])
 
-    terms = KGramIndexer.wildcard_to_terms("ca*", kgram_index)
+    terms = KGramIndexer.expand_wildcard_to_list("ca*", kgram_index)
     self.assertEqual(terms, ["cat"])
+
+  @staticmethod
+  def build_core():
+    id1  = stub_doc1_id
+    id2  = stub_doc2_id
+    doc1 = Doc(text=stub_doc1, index=id1)
+    doc2 = Doc(text=stub_doc2, index=id2)
+    docs = []
+    docs.append(doc1)
+
+    for i in range(1000):
+      docs.append(doc2)
+    ic   = IndexController(docs)
+
+    index_controller = ic.build()
+
+  @staticmethod
+  def build_core_various():
+    from essential_generators import DocumentGenerator
+    docs = []
+    gen = DocumentGenerator()
+    gen.init_word_cache(5000)
+    gen.init_sentence_cache(5000)
+
+    for i in range(500):
+      gen_doc = gen.paragraph()
+      doc = Doc(text=gen_doc, index=i)
+      docs.append(doc)
+    ic   = IndexController(docs)
+
+    index_controller = ic.build()
+
+  def test05_profile_redundant_kgrams(self):
+    """query() shall return relevant documents to the given term"""
+    profiled_exec = False
+
+    d1 = datetime.datetime.now()
+    if profiled_exec:
+      cProfile.runctx('KGramIndexTest.build_core()', globals(), locals())
+    else:
+      KGramIndexTest.build_core()
+
+    d2 = datetime.datetime.now()
+    threshold = 2
+    self.assertLessEqual((d2-d1).seconds, threshold, f"time shall be less than or equal {threshold} seconds")
+
+  def test06_profile_various_kgrams(self):
+    """query() shall return relevant documents to the given term"""
+    profiled_exec = False
+    d1 = datetime.datetime.now()
+    if profiled_exec:
+      cProfile.runctx('KGramIndexTest.build_core_various()', globals(), locals())
+    else:
+      KGramIndexTest.build_core_various()
+
+    d2 = datetime.datetime.now()
+    threshold = 5
+    self.assertLessEqual((d2-d1).seconds, threshold, f"time shall be less than or equal {threshold} seconds")
 
   def tearDown(self):
     """Triggered after each test"""

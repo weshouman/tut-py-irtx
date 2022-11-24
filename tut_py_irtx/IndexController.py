@@ -23,7 +23,7 @@ def get_joint_multi(lists):
 
   return joint
 
-def get_intersection(list1, list2):
+def get_intersection_of_sorted(list1, list2):
   """Return the intersection of 2 lists"""
   # surprisingly, that doesn't save time
   # if list1[0] > list2[-1] or list2[0] > list1[-1]:
@@ -137,7 +137,57 @@ class IndexController():
         matched.append(doc)
     return matched
 
+  def query_intersection_core(self, text_list, support_wildcards_kgram=True):
+    """Core query function
+
+    Parameters
+    ----------
+    text_list : list of str
+      Text to query
+    support_wildcards_kgram : bool
+      Whether to support wildcard expansion using kgrams or not
+
+    Returns
+    -------
+    list
+      Docs corresponding to the given query text_list
+    """
+    ii = self.inv_indexer()
+
+    out_docs = []
+    for i, text in enumerate(text_list):
+      text_docs = []
+
+      if (support_wildcards_kgram and "*" in text):
+        # kgram index is used only if support_wildcard_kgrams is used
+        kgram_index = self.kgram_indexer().index
+        wc_exp_list = KGramIndexer.expand_wildcard_to_list(text, kgram_index)
+        for wc_exp in wc_exp_list:
+          term = ii.get_corresponding_term(util.normalize(wc_exp))
+          if term is not None:
+            text_docs = get_joint(text_docs, term.occurances)
+
+      else:
+        term = ii.get_corresponding_term(util.normalize(text))
+        if term is not None:
+          text_docs = term.occurances
+
+      # enable for extensive debugging only
+      # logging.debug(f"[{text}] found in the docs: {text_docs}")
+
+      if i == 0:
+        out_docs = text_docs
+      else:
+        out_docs = get_intersection_of_sorted(sorted(out_docs), sorted(text_docs))
+
+      logging.debug(f"[DOC-INTERSECTION]: {out_docs}")
+
+    return out_docs
+
   def query_intersection_wildcards(self, text):
+    return self.query_intersection(text, True)
+
+  def query_intersection(self, text, wildcard=False):
     """Query the intersection of documents in the indexers
        that the given text appeared at, with wildcard support"""
     if isinstance(text, str):
@@ -147,73 +197,10 @@ class IndexController():
     else:
       raise TypeError("Unexpected query type")
 
-    if len(text_list) < 1:
-      return []
-    else:
-      self.build()
-      intersection = []
-      term_list = []
+    self.build()
 
-      # through intersecting kgrams, expand the wildcard text into text to be searched for
-      text_list_exp = []
-      kgram_index = self.kgram_indexer().index
-      for text in text_list:
-        if ("*" in text):
-          terms = KGramIndexer.wildcard_to_terms(text, kgram_index)
-          text_list_exp.extend(terms)
-        else:
-          text_list_exp.append(text)
+    docs = self.query_intersection_core(text_list, support_wildcards_kgram=wildcard)
 
-      # search for documents that have the expanded text
-      for text in text_list_exp:
-        text_normal = util.normalize(text)
-        inv_index = self.inv_indexer().index
-        if text_normal in inv_index.keys():
-          term_list.append(inv_index[text_normal])
-
-      if len(term_list) > 0:
-        intersection = term_list[0].occurances
-
-        for curr_term in term_list[1:]:
-          curr_o = curr_term.occurances
-          intersection = get_intersection(curr_o, intersection)
-
-      doc_index = self.doc_indexer().index
-      return [doc_index[elem] for elem in intersection]
-
-  def query_intersection(self, text):
-    """Query the intersection of documents in the invereted index
-       that the given text appeared at"""
-    if isinstance(text, str):
-      text_list = [text]
-    elif isinstance(text, list):
-      text_list = text
-    else:
-      raise TypeError("Unexpected query type")
-
-    if len(text_list) < 1:
-      return []
-    else:
-      # better be sure that the indices are built
-      self.build()
-
-      # lists to be filled
-      intersection = []
-      term_list = []
-
-      for text in text_list:
-        text_normal = Term.normalize(text)
-        inv_index = self.inv_indexer().index
-        if text_normal in inv_index.keys():
-          term_list.append(inv_index[text_normal])
-
-      if len(term_list) > 0:
-        intersection = term_list[0].occurances
-
-        for curr_term in term_list[1:]:
-          curr_o = curr_term.occurances
-          intersection = get_intersection(curr_o, intersection)
-
-      doc_index = self.doc_indexer().index
-      return [doc_index[elem] for elem in intersection]
+    doc_index = self.doc_indexer().index
+    return [doc_index[doc] for doc in docs]
 

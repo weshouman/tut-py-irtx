@@ -21,6 +21,25 @@ class InvertedIndexer(Indexer):
 
     return self.index
 
+  def get_corresponding_term(self, text):
+    """Get corresponding term to the given text form the index
+
+    Parameters
+    ----------
+    text : str
+      Text to look up.
+
+    Returns
+    -------
+    Term
+      The term from the index that corresponds to the given text,
+      none if not found.
+    """
+    term = None
+    if text in self.index.keys():
+      term = self.index[text]
+    return term
+
   @staticmethod
   def merge_terms(inv_index, term_list):
     """Merge the term_list with the given inv_index and return the updated inv_index"""
