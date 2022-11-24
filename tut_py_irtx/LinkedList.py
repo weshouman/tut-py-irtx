@@ -195,7 +195,14 @@ class LinkedList():
   def has(self, othernode):
     node = self.head
     while(node is not None):
-      if node == othernode:
+      # comparison through the __lt__ and __eq__ consumes a lot of time as this method is extensively used, and optimizing it is a necessity
+      # making the following check usage discouraged
+      #if node > othernode:
+      #elif node == othernode:
+
+      if node.data > othernode.data:
+        return False
+      elif node.data == othernode.data:
         return True
       node = node.next
     return False
