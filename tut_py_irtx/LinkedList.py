@@ -112,7 +112,7 @@ class LinkedList():
 
   def get_slice_as_ll(self, count=5, start=0):
     """get first n words as a linked list"""
-    if count == 0:
+    if count == 0 or self.is_empty():
       return LinkedList()
 
     node    = self.head
