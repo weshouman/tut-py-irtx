@@ -42,14 +42,14 @@ class LinkedList():
       raise NotImplementedError()
 
   def is_empty(self):
-    return self.head == None
+    return self.head is None
 
   def inject_first(self, node):
     """Inject first node into the linked list
        sets up the head and tail"""
     self.head = node
     self.tail = node
-    if node != None:
+    if node is not None:
       self.count = self.count + 1
 
   def inject_tail(self, node):
@@ -72,7 +72,7 @@ class LinkedList():
   def get_count(self):
     node = self.head
     count = 0
-    while(node != None):
+    while(node is not None):
       count = count + 1
       node = node.next
 
@@ -83,7 +83,7 @@ class LinkedList():
 
     node1 = self.head
     node2 = other.head
-    while node1 != None and node2 != None:
+    while node1 is not None and node2 is not None:
       if node1 == node2:
         intersection.append(node1.data)
         node1 = node1.next
@@ -100,7 +100,7 @@ class LinkedList():
     l = []
     node = self.head
     i = 0
-    while node != None:
+    while node is not None:
       if i >= count and count >= 0:
         break
       if (i >= start):
@@ -120,7 +120,7 @@ class LinkedList():
     nodenew = llnew.head
 
     i = 0
-    while node.next != None:
+    while node.next is not None:
       if i >= count-1 and count >= 0:
         break
       node = node.next
@@ -165,7 +165,7 @@ class LinkedList():
 
   def has(self, othernode):
     node = self.head
-    while(node != None):
+    while(node is not None):
       if node == othernode:
         return True
       node = node.next
@@ -195,15 +195,15 @@ class Node():
   @staticmethod
   def get_last(node):
     upcoming = node.next
-    while (upcoming != None):
+    while (upcoming is not None):
       return Node.get_last(upcoming)
     return node
 
   @staticmethod
   def prettyprint(node):
     current = node
-    while (current != None):
-      if (current.next == None):
+    while (current is not None):
+      if (current.next is None):
         return f"[{current}]"
       else:
         return f"[{current}]->{Node.prettyprint(current.next)}"
