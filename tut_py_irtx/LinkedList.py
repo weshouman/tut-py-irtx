@@ -67,7 +67,7 @@ class LinkedList():
 
   def inject_tail(self, node):
     if self.is_empty():
-      inject_first(node)
+      self.inject_first(node)
     else:
       self.tail.next = node
       self.tail = node
