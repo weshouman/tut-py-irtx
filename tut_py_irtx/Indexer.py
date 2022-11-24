@@ -3,6 +3,21 @@ from tut_py_irtx.util import *
 class Indexer():
 
   def __init__(self, docs=None, docs_hash="", build_time=""):
+    """Base class for the different indexers
+    Attributes
+    ----------
+    doc_list : list of Doc
+      List of documents to be indexed
+    index : dict
+      The index
+    is_index_built : True
+      Set upon index creation
+    doc_hash : str
+      Hash of the indexed documents, to be used to check if the
+      the doc_list is updated
+    build_time : str
+      Time spent building the index
+    """
     self.doc_list = docs
     self.index = {}
     self.is_index_built = False

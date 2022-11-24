@@ -17,6 +17,19 @@ class LinkedList():
     self.inject_first(node)
 
   def extend_from_list(self, l):
+    """Inject a list of elements, without considering order or uniqueness
+
+    This function should not be called for an ordered and/or
+    unique linked list, to avoid adding a headache of sorting it
+
+    One could either use `inject_tail(sorted(set(l)))`,
+    or use `add(elem)` directly
+
+    Parameters
+    ----------
+    l : list of str
+      the list to inject from
+    """
     for val in l:
       self.add(val, from_tail=True, ignore_checks=True)
     return self
