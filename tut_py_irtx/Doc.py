@@ -16,10 +16,10 @@ class Doc():
     out = self.index
 
     if self.author_id:
-      out += " \tauthored by {self.author_id}"
+      out += f" \tauthored by {self.author_id}"
 
     if self.timestamp:
-      out += " \tat {self.timestamp}"
+      out += f" \tat {self.timestamp}"
 
     return out
 
