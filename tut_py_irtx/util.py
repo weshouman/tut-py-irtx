@@ -9,7 +9,7 @@ def in_sorted(elems, query):
   return False
 
 def slice_list_of_dict(indict, end, start=0):
-  """Get a slice of the the input dictionary of size n"""
+  """Get a slice of the input dictionary of size n"""
   outlist = []
   for i, (k, v) in enumerate(indict.items()):
     if i < start: break
