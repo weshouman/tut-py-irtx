@@ -24,12 +24,27 @@ class Doc():
     return out
 
   @staticmethod
+  def preprocess(text):
+    return text.replace("[newline]", " "). \
+        replace("[NEWLINE]", " "). \
+        replace(",", " "). \
+        replace('"', " "). \
+        replace("”", " "). \
+        replace("“", " "). \
+        replace("?", " "). \
+        replace("!", " "). \
+        encode('ascii', 'ignore').decode('ascii')
+
+
+  @staticmethod
   def fetch_terms(doc):
     """Get a list of terms given a doc"""
     if not isinstance(doc, Doc):
       raise TypeError("Unsupported Document type")
 
     text = doc.text
+
+    text = Doc.preprocess(text)
 
     tokens = text.split()
     terms = [Term(elem, [doc.index]) for elem in set(tokens)]
