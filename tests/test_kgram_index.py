@@ -15,7 +15,7 @@ def tearDownModule():
   """Triggered after all module tests"""
   logging.debug("tearDownModule is triggered")
 
-class InvIndexTest(unittest.TestCase):
+class KGramIndexTest(unittest.TestCase):
 
   @classmethod
   def setUpClass(cls):
