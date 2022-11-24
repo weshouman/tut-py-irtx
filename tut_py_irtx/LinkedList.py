@@ -30,8 +30,8 @@ class LinkedList():
     l : list of str
       the list to inject from
     """
-    for val in l:
-      self.add(val, from_tail=True, ignore_checks=True)
+    for elem in l:
+      self.add(elem, from_tail=True, ignore_checks=True)
     return self
 
   def add(self, data, from_tail=False, ignore_checks=False):
