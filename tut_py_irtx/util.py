@@ -19,5 +19,5 @@ def slice_list_of_dict(indict, end, start=0):
   return outlist
 
 def normalize(text):
-  return text.lower().strip(",.#@")
+  return text.lower().strip(",.#@:\"")
 
