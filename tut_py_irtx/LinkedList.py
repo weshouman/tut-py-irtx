@@ -143,32 +143,48 @@ class LinkedList():
     return llnew
 
   def inject_ordered(self, othernode, unique=False):
-    """Inject a given node to the ordered linked list"""
-    node = self.head
+    """Inject a given node to the ordered linked list
 
-    if othernode == node:
-      if (unique == False):
-        self.inject_head(othernode)
-      return
-
-    if othernode < node:
+    It is discouraged to check `has(node)` before calling
+    `inject_ordered()` as we already move through the linked list
+    while injecting in order
+    """
+    if othernode.data < self.head.data:
       self.inject_head(othernode)
       return
 
-    while(node.next != None):
+    if othernode.data == self.head.data:
+      if (unique == False):
+        # force injecting the head if similar to the original head
+        # NOTE: prev_node is not assigned yet
+        self.inject_head(othernode)
+      return
+
+    # skip moving through the linkedlist if it's to be appended
+    if othernode.data > self.tail.data:
+      self.inject_tail(othernode)
+      return
+
+    if othernode.data == self.tail.data:
+      if (unique == False):
+        self.inject_tail(othernode)
+      return
+
+    node = self.head
+    # logging.debug(f"{self.head.data:20} | {othernode.data:20} | {self.tail.data:20}")
+
+    while(node.next is not None):
       prev_node = node
       node = node.next
-      if othernode > prev_node and othernode < node:
+      if  othernode.data < node.data:
         prev_node.inject(othernode)
         self.count = self.count + 1
         return
-      elif othernode == node:
+      elif othernode.data == node.data:
         if (unique == False):
           prev_node.inject(othernode)
           self.count = self.count + 1
         return
-
-    self.inject_tail(othernode)
 
   def inject_head(self, node):
     temp = self.head
