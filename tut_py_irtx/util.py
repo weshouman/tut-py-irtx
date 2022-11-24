@@ -13,7 +13,7 @@ def slice_list_of_dict(indict, end, start=0):
   outlist = []
   for i, (k, v) in enumerate(indict.items()):
     if i < start: break
-    if i >= end: break
+    if end > 0 and i >= end: break
     outlist.append(v)
 
   return outlist
