@@ -1,2 +1,4 @@
+essential-generators==1.0
 lxml==4.9.1
+numpy==1.23.5
 unittest-xml-reporting==3.2.0
