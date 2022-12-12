@@ -3,7 +3,6 @@ import unittest
 import xmlrunner
 
 import tut_py_irtx.tfidf as tfidf
-from tests.stub_lev_dist import *
 
 def setUpModule():
   """Triggered before all module tests"""

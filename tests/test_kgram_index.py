@@ -37,10 +37,10 @@ class KGramIndexTest(unittest.TestCase):
 
     self.assertIsInstance(ki.fetch_grams(["text"]), list, 'fetch_grams("") returned non list')
 
-    ki.doc_list = []
+    ki.set_docs([])
     self.assertIsInstance(ki.build(force=True), dict, 'KGramIndex.build([]) returned non dict')
 
-    ki.doc_list = [doc1]
+    ki.set_docs([doc1])
     kgram_index = ki.build(force=True)
     self.assertIsInstance(kgram_index, dict, "KGramIndex.build returned non dict")
 
@@ -50,7 +50,7 @@ class KGramIndexTest(unittest.TestCase):
     self.assertTrue("he" in kgram_index, "index 'he' is not created")
     self.assertListEqual(kgram_index["he"].words.get_slice(), ["hello"], "index hello is not set correctly")
 
-    ki.doc_list = [doc1, doc2]
+    ki.set_docs([doc1, doc2])
     kgram_index = ki.build(force=True)
 
     self.assertTrue("he" in kgram_index, "index 'he' is not created")

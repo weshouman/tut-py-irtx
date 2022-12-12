@@ -1,4 +1,5 @@
 from tut_py_irtx.Term import *
+from tut_py_irtx.Posting import *
 
 class Doc():
   """A document is a representation of the structured form
@@ -47,6 +48,6 @@ class Doc():
     text = Doc.preprocess(text)
 
     tokens = text.split()
-    terms = [Term(elem, [doc.index]) for elem in set(tokens)]
+    terms = [Term(elem, [Posting(doc.index)]) for elem in tokens]
     return terms
 

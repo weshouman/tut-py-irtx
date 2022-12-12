@@ -1,4 +1,5 @@
 from tut_py_irtx.util import *
+from tut_py_irtx.Doc import *
 
 class Indexer():
 
@@ -18,11 +19,30 @@ class Indexer():
     build_time : str
       Time spent building the index
     """
-    self.doc_list = docs
+    self.set_docs(docs)
     self.index = {}
     self.is_index_built = False
     self.doc_hash = docs_hash
     self.build_time = build_time
+
+  def set_docs(self, docs):
+    # we should make the postings a linked list to avoid the need of sorting docs beforehand
+    # Performance needs to be measured though
+    if isinstance(docs, Doc):
+      self.doc_list = [docs]
+    elif isinstance(docs, list):
+      if len(docs) > 0 and not isinstance(docs[0], Doc):
+        raise TypeError(f"Unsupported Document, given type is [{type(Doc)}]")
+      else:
+        self.doc_list = sorted(docs)
+    elif docs is None:
+      # NOTE: This occurs when the IndexController is initialzing the indexer
+      #       We may decide to use a single doc_list source if possible
+      self.doc_list = []
+    else:
+      raise TypeError(f"Unsupported Document, given type is {type(docs)}")
+
+    self.invalidate()
 
   def get_index(self):
     if not self.is_index_built:

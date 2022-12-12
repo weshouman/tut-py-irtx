@@ -30,38 +30,53 @@ class InvIndexTest(unittest.TestCase):
 
   def test01_inverted_index_generation(self):
     """The inverted index is correctly generated"""
+    log = logging.getLogger( "InvIndexTest.test01" )
+    # logging.getLogger( "InvIndexTest.test01" ).setLevel( logging.DEBUG )
 
     id1  = stub_doc1_id
     id2  = stub_doc2_id
     doc1 = Doc(text=stub_doc1, index=id1)
     doc2 = Doc(text=stub_doc2, index=id2)
 
+    log.debug("Init Index controller shall return a list if any Doc is passed")
     ic   = IndexController(Doc(text=""))
 
     self.assertIsInstance(Doc.fetch_terms(Doc("")), list, 'fetch_terms("") returned non list')
 
     ii   = InvertedIndexer([])
     ii.build()
+    log.debug("Inverted Index shall be a dict, even if an empty list of docs is supplied")
     self.assertIsInstance(ii.build(force=True), dict, 'ii.build([]) returned non dict')
 
-    ii.doc_list = [doc1]
+    ii.set_docs([doc1])
     inv_index = ii.build(force=True)
+    log.debug("Inverted Index shall be a dict, if a list of a doc is supplied")
     self.assertIsInstance(inv_index, dict, "ii.build returned non dict")
 
+    log.debug("Inverted Index shall provide the correct count of terms")
     self.assertEqual(len(inv_index), doc1_term_count)
 
+    log.debug("Inverted Index shall have the expected terms")
     self.assertTrue("hello" in inv_index, "index hello is not created")
-    self.assertListEqual(inv_index["hello"].occurances, [id1], "index hello is not set correctly")
+    posting_ids = [elem.doc_id for elem in inv_index["hello"].occurances]
+    log.debug("Inverted Index shall have the expected terms set correctly")
+    self.assertListEqual(posting_ids, [id1], "index hello is not set correctly")
 
-    ii.doc_list = [doc1, doc2]
+    ii.set_docs([doc1, doc2])
     inv_index = ii.build(force=True)
 
+    log.debug("Inverted Index shall have the expected terms")
     self.assertTrue("hello" in inv_index, "index hello is not created")
-    self.assertListEqual(inv_index["hello"].occurances, [id1], "index hello is not set correctly")
+    posting_ids = [elem.doc_id for elem in inv_index["hello"].occurances]
+    log.debug("Inverted Index shall have the expected terms set correctly")
+    self.assertListEqual(posting_ids, [id1], "index hello is not set correctly")
 
+    log.debug("Inverted Index shall have the expected terms")
     self.assertTrue("test" in inv_index, "index test is not created")
+    posting_ids = [elem.doc_id for elem in inv_index["test"].occurances]
     # the docs shall get sorted, thus id2 shall preceed id1
-    self.assertListEqual(inv_index["test"].occurances, [id1, id2], "index test is not set correctly")
+    log.debug("Inverted Index shall have the expected terms set correctly")
+    self.assertListEqual(posting_ids, [id2, id1], "index test is not set in order, thus sorted based searching would fail")
 
     self.assertTrue("Hello" not in inv_index, "index Hello is created")
     self.assertNotEqual(len(inv_index), 44, "commas and dots are not stripped from the string, thus some terms are stored multiple times")

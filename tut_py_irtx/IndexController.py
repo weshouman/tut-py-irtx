@@ -1,5 +1,6 @@
 import logging
 
+from tut_py_irtx.errors import *
 from tut_py_irtx.util import *
 from tut_py_irtx.Doc import *
 import tut_py_irtx.Term
@@ -112,7 +113,9 @@ class IndexController():
 
   def build(self, force=False):
     for indexer in self.indexers:
-      indexer.doc_list = self.doc_list
+      # doc_list is saved twice, can we fix that?
+      # if so, we need to cleanup
+      indexer.set_docs(self.doc_list)
       indexer.build(force)
 
   def get_doc_index_slice(self, n = 10):
@@ -137,7 +140,66 @@ class IndexController():
         matched.append(doc)
     return matched
 
-  def query_intersection_core(self, text_list, support_wildcards_kgram=True):
+  def get_query_frequencies(queries):
+    """ fetch the tfs and idfs of the terms in the queries"""
+    queryDoc = Doc(text=" ".join(queries))
+    terms = Doc.fetch_terms(queryDoc)
+    unique_terms = set(terms)
+
+    uterm_counts = []
+    qtfs = []
+    qidfs = []
+
+    # This loop is only necessary when (len(set(terms)) != len(terms))
+    # however, it's not necessary to treat that specially,
+    # query terms won't exceed a hundred anyway
+    for i, uterm in enumerate(unique_terms):
+      uterm_counts.append(0)
+
+      for term in terms:
+        term == uterm
+        uterm_counts[i] = uterm_counts[i] + 1
+
+      qtfs.append(tfidf.calc_tf(uterm_counts[i]))
+
+    # a query is a single document thus the idf is just 1, normalized to the multiplier
+    qidfs.extend([1 *tfidf.IDF_MULTIPLIER] * len(unique_terms))
+
+    return qtfs, qidfs
+
+  def get_doc_frequencies(index, doc, queries):
+    """ fetch the tfs and idfs of the terms in the index, that match to the given queries
+
+    notes:
+    - docs could be extractedd from the index + queries, but it's kept separate until
+      it's decided how bad is it to refetch the docs
+    - keep unique_terms extraction in sync with get_query_frequencies,
+      until it's decided whether it's better to separate the logics
+      or to combine them
+    """
+    queryDoc = Doc(text=" ".join(queries))
+    terms = Doc.fetch_terms(queryDoc)
+    unique_terms = set(terms)
+
+    ranks = []
+    dtfs = []
+    didfs = []
+
+    for i, uterm in enumerate(unique_terms):
+      # doc_ids = [occ.doc_id for occ in index[uterm.text].occurances]
+      # i = in_sorted(doc_ids, doc.index)
+      i = in_sorted(index[uterm.text].occurances, doc)
+      if i >= 0:
+        print(f"[DOCMATCH][term:{uterm.text}][count:{index[uterm.text].occurances[i].count}]{doc}")
+        dtfs.append(index[uterm.text].occurances[i].count)
+      else:
+        dtfs.append(0)
+
+      didfs.append(index[uterm.text].idf)
+
+    return dtfs, didfs
+
+  def query_intersection_core(self, text_list, support_wildcards_kgram=True, support_ranking=False):
     """Core query function
 
     Parameters
@@ -165,6 +227,9 @@ class IndexController():
         for wc_exp in wc_exp_list:
           term = ii.get_corresponding_term(util.normalize(wc_exp))
           if term is not None:
+            # posting_ids = [posting.doc_id for posting in term.occurances]
+            # we don't use term.occurances directly for text_docs,
+            # as the occurances(Posting type) is not hashable, which should be the case
             text_docs = get_joint(text_docs, term.occurances)
 
       else:
@@ -182,12 +247,24 @@ class IndexController():
 
       logging.debug(f"[DOC-INTERSECTION]: {out_docs}")
 
-    return out_docs
+    ranks = []
+    if support_ranking:
+      qtfs, qidfs = IndexController.get_query_frequencies(text_list)
+      for doc in out_docs:
+        dtfs, didfs = IndexController.get_doc_frequencies(self.inv_indexer().index, doc, text_list)
+
+        rank = tfidf.get_query_similarity(qtfs, qidfs, dtfs, didfs)
+        ranks.append(rank)
+
+      return out_docs, ranks
+
+    # else
+    return out_docs, ranks
 
   def query_intersection_wildcards(self, text):
     return self.query_intersection(text, True)
 
-  def query_intersection(self, text, wildcard=False):
+  def query_intersection(self, text, wildcard=False, ranked=False):
     """Query the intersection of documents in the indexers
        that the given text appeared at, with wildcard support"""
     if isinstance(text, str):
@@ -199,8 +276,8 @@ class IndexController():
 
     self.build()
 
-    docs = self.query_intersection_core(text_list, support_wildcards_kgram=wildcard)
+    postings, ranks = self.query_intersection_core(text_list, support_wildcards_kgram=wildcard, support_ranking=ranked)
 
     doc_index = self.doc_indexer().index
-    return [doc_index[doc] for doc in docs]
+    return [doc_index[posting.doc_id] for posting in postings] , ranks
 

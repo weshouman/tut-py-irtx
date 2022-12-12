@@ -18,7 +18,6 @@ def calc_tf(term_count):
   if term_count < 1:
     return 0
   else:
-    # return round((1 + math.log10(term_count)) * TF_MULTIPLIER)
     return (1 + math.log10(term_count)) * TF_MULTIPLIER
 
 def calc_idf(docs, total_docs):
@@ -26,7 +25,7 @@ def calc_idf(docs, total_docs):
   Returns
   -------
   idf: int
-    Inverted Document Frequency, a measure of how rare a word is
+    Inverted Document Frequency, a measure of how rare a word is by
     getting the log(totalDocs/docsThisTermAppearedIn)
 
     Note: The idf is different from calculating based on the 
@@ -41,10 +40,8 @@ def calc_idf(docs, total_docs):
     raise ValueError(f"[IDF] A term appeared in 0 docs, should not be in the dictionary")
     return 0
   elif total_docs < docs:
-    #raise ValueError(f"[IDF] Total_docs({total_docs}) is less than docs({docs})")
-    raise ValueError()
+    raise ValueError(f"[IDF] The term is stated to appear in {docs} documents, however the max document number is {total_docs}")
   else:
-    # return round((math.log10(total_docs/docs)) * IDF_MULTIPLIER)
     return (math.log10(total_docs/docs)) * IDF_MULTIPLIER
 
 def get_query_similarity(qtf_list, qidf_list, dtf_list, didf_list, tfweight=1, idfweight=1):
