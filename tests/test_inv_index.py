@@ -163,11 +163,186 @@ class InvIndexTest(unittest.TestCase):
 
     ic   = IndexController([doc1, doc2])
 
-    inv_index = ic.build()
+    ic.build()
 
     matches = ic._regex_docs("a.*")
     self.assertEqual(len(matches), 2, "regex_docs('a.*') should match both the docs")
     logging.debug([m.index for m in matches])
+
+  def test06_vis_index(self):
+    doc1 = Doc(text=stub_doc1, index=stub_doc1_id)
+    doc2 = Doc(text=stub_doc2, index=stub_doc2_id)
+
+    ic   = IndexController([doc1, doc2])
+
+    ic.build()
+    ii = ic.inv_indexer()
+
+    vis = ii.visualize_index(10)
+    self.assertEqual(vis, """[TERM          - DOC_COUNT - IDF] -> [DOC - TERM_COUNT - TF]
+------------------------------------------------------------
+[this              -    2 -    0] -> ['1451 - 1 -  1000', '6428 - 1 -  1000']
+[is                -    2 -    0] -> ['1451 - 3 -  1477', '6428 - 1 -  1000']
+[a                 -    2 -    0] -> ['1451 - 1 -  1000', '6428 - 2 -  1301']
+[more              -    1 -  301] -> ['1451 - 1 -  1000']
+[advanced          -    1 -  301] -> ['1451 - 1 -  1000']
+[test              -    2 -    0] -> ['1451 - 1 -  1000', '6428 - 1 -  1000']
+[document          -    2 -    0] -> ['1451 - 2 -  1301', '6428 - 1 -  1000']
+[imagine           -    1 -  301] -> ['1451 - 1 -  1000']
+[you               -    1 -  301] -> ['1451 - 1 -  1000']
+[work              -    1 -  301] -> ['1451 - 1 -  1000']
+[only              -    1 -  301] -> ['1451 - 1 -  1000']
+[with              -    1 -  301] -> ['1451 - 2 -  1301']
+[one               -    1 -  301] -> ['1451 - 1 -  1000']
+[testing           -    1 -  301] -> ['1451 - 1 -  1000']
+[wouldn't          -    1 -  301] -> ['1451 - 1 -  1000']
+[be                -    1 -  301] -> ['1451 - 1 -  1000']
+[as                -    2 -    0] -> ['1451 - 2 -  1301', '6428 - 4 -  1602']
+[efficient         -    1 -  301] -> ['1451 - 1 -  1000']
+[working           -    1 -  301] -> ['1451 - 1 -  1000']
+[two               -    1 -  301] -> ['1451 - 1 -  1000']
+[information       -    2 -    0] -> ['1451 - 3 -  1477', '6428 - 1 -  1000']
+[retrieval         -    2 -    0] -> ['1451 - 1 -  1000', '6428 - 1 -  1000']
+[about             -    1 -  301] -> ['1451 - 2 -  1301']
+[capturing         -    1 -  301] -> ['1451 - 2 -  1301']
+[from              -    1 -  301] -> ['1451 - 2 -  1301']
+[structured        -    1 -  301] -> ['1451 - 1 -  1000']
+[text              -    1 -  301] -> ['1451 - 3 -  1477']
+[mining            -    1 -  301] -> ['1451 - 1 -  1000']
+[unstructured      -    1 -  301] -> ['1451 - 1 -  1000']
+[hello             -    1 -  301] -> ['6428 - 1 -  1000']
+[world             -    1 -  301] -> ['6428 - 1 -  1000']
+[to                -    1 -  301] -> ['6428 - 1 -  1000']
+[do                -    1 -  301] -> ['6428 - 1 -  1000']
+[some              -    1 -  301] -> ['6428 - 1 -  1000']
+[not               -    1 -  301] -> ['6428 - 1 -  1000']
+[big               -    1 -  301] -> ['6428 - 1 -  1000']
+[shakespear's      -    1 -  301] -> ['6428 - 1 -  1000']
+[docs              -    1 -  301] -> ['6428 - 1 -  1000']
+[nor               -    1 -  301] -> ['6428 - 1 -  1000']
+[small             -    1 -  301] -> ['6428 - 1 -  1000']
+[one-liner         -    1 -  301] -> ['6428 - 1 -  1000']
+""")
+
+
+  def test07_merge_add_new_only(self):
+    """Test adding a new doc and merging its terms without touching previous terms that did not get affected"""
+    doc1 = Doc(text=stub_doc1, index=stub_doc1_id)
+    doc2 = Doc(text=stub_doc2, index=stub_doc2_id)
+    doc3 = Doc(text=stub_doc3, index=stub_doc3_id)
+
+    ic   = IndexController([doc1, doc2])
+
+    ic.build()
+    ii = ic.inv_indexer()
+
+    # affect some term
+    ii.index["some"].occurances[0].tf = 9999
+
+    # Merge a new doc
+    terms = Doc.fetch_terms(doc3)
+
+    ii.index = InvertedIndexer.merge_terms(ii.index, terms)
+
+    self.assertEqual(ii.index["some"].occurances[0].tf, 9999, "the occurances shall not be changed")
+
+    # NOTE: the idf calculation is not (at least for now) in scope for the merge
+    self.assertEqual(str(ii), """[TERM          - DOC_COUNT - IDF] -> [DOC - TERM_COUNT - TF]
+------------------------------------------------------------
+[this              -    3 -    0] -> ['1451 - 1 -  1000', '6428 - 1 -  1000', '8888 - 1 -  1000']
+[is                -    3 -    0] -> ['1451 - 3 -  1477', '6428 - 1 -  1000', '8888 - 1 -  1000']
+[a                 -    3 -    0] -> ['1451 - 1 -  1000', '6428 - 2 -  1301', '8888 - 1 -  1000']
+[more              -    2 -  301] -> ['1451 - 1 -  1000', '8888 - 1 -  1000']
+[advanced          -    1 -  301] -> ['1451 - 1 -  1000']
+[test              -    2 -    0] -> ['1451 - 1 -  1000', '6428 - 1 -  1000']
+[document          -    2 -    0] -> ['1451 - 2 -  1301', '6428 - 1 -  1000']
+[imagine           -    1 -  301] -> ['1451 - 1 -  1000']
+[you               -    1 -  301] -> ['1451 - 1 -  1000']
+[work              -    1 -  301] -> ['1451 - 1 -  1000']
+[only              -    1 -  301] -> ['1451 - 1 -  1000']
+[with              -    1 -  301] -> ['1451 - 2 -  1301']
+[one               -    1 -  301] -> ['1451 - 1 -  1000']
+[testing           -    1 -  301] -> ['1451 - 1 -  1000']
+[wouldn't          -    1 -  301] -> ['1451 - 1 -  1000']
+[be                -    1 -  301] -> ['1451 - 1 -  1000']
+[as                -    2 -    0] -> ['1451 - 2 -  1301', '6428 - 4 -  1602']
+[efficient         -    1 -  301] -> ['1451 - 1 -  1000']
+[working           -    1 -  301] -> ['1451 - 1 -  1000']
+[two               -    1 -  301] -> ['1451 - 1 -  1000']
+[information       -    3 -    0] -> ['1451 - 3 -  1477', '6428 - 1 -  1000', '8888 - 1 -  1000']
+[retrieval         -    2 -    0] -> ['1451 - 1 -  1000', '6428 - 1 -  1000']
+[about             -    2 -  301] -> ['1451 - 2 -  1301', '8888 - 1 -  1000']
+[capturing         -    1 -  301] -> ['1451 - 2 -  1301']
+[from              -    1 -  301] -> ['1451 - 2 -  1301']
+[structured        -    1 -  301] -> ['1451 - 1 -  1000']
+[text              -    2 -  301] -> ['1451 - 3 -  1477', '8888 - 1 -  1000']
+[mining            -    1 -  301] -> ['1451 - 1 -  1000']
+[unstructured      -    1 -  301] -> ['1451 - 1 -  1000']
+[hello             -    1 -  301] -> ['6428 - 1 -  1000']
+[world             -    2 -  301] -> ['6428 - 1 -  1000', '8888 - 1 -  1000']
+[to                -    1 -  301] -> ['6428 - 1 -  1000']
+[do                -    1 -  301] -> ['6428 - 1 -  1000']
+[some              -    1 -  301] -> ['6428 - 1 -  9999']
+[not               -    1 -  301] -> ['6428 - 1 -  1000']
+[big               -    1 -  301] -> ['6428 - 1 -  1000']
+[shakespear's      -    1 -  301] -> ['6428 - 1 -  1000']
+[docs              -    1 -  301] -> ['6428 - 1 -  1000']
+[nor               -    1 -  301] -> ['6428 - 1 -  1000']
+[small             -    1 -  301] -> ['6428 - 1 -  1000']
+[one-liner         -    1 -  301] -> ['6428 - 1 -  1000']
+[morocco           -    1 -    0] -> ['8888 - 1 -  1000']
+[did               -    1 -    0] -> ['8888 - 1 -  1000']
+[great             -    1 -    0] -> ['8888 - 1 -  1000']
+[job               -    1 -    0] -> ['8888 - 1 -  1000']
+[in                -    1 -    0] -> ['8888 - 2 -  1301']
+[fifa              -    1 -    0] -> ['8888 - 1 -  1000']
+[cup               -    1 -    0] -> ['8888 - 1 -  1000']
+[2022              -    1 -    0] -> ['8888 - 1 -  1000']
+[that              -    1 -    0] -> ['8888 - 1 -  1000']
+[was               -    1 -    0] -> ['8888 - 1 -  1000']
+[played            -    1 -    0] -> ['8888 - 1 -  1000']
+[qatar             -    1 -    0] -> ['8888 - 1 -  1000']
+[the               -    1 -    0] -> ['8888 - 2 -  1301']
+[match             -    1 -    0] -> ['8888 - 1 -  1000']
+[out               -    1 -    0] -> ['8888 - 1 -  1000']
+[of                -    1 -    0] -> ['8888 - 2 -  1301']
+[scope             -    1 -    0] -> ['8888 - 1 -  1000']
+""")
+
+  def test08_merge_could_ignore_updates(self):
+    """Test option of skipping the hotupdate of term frequency by the merge_terms"""
+    doc1 = Doc(text=stub_doc1, index=stub_doc1_id)
+    doc2 = Doc(text=stub_doc2, index=stub_doc2_id)
+
+    ic   = IndexController([doc1])
+
+    ic.build()
+    ii = ic.inv_indexer()
+
+    # Merge a new doc
+    print(ii)
+    terms = Doc.fetch_terms(doc2)
+
+    ii.index = InvertedIndexer.merge_terms(ii.index, terms, update_tfs=False)
+    print(ii)
+
+    self.assertEqual(ii.index["imagine"].occurances[0].count, 1, "the occurance count shall be updated")
+    self.assertEqual(ii.index["imagine"].occurances[0].tf, 0, "the term frequencies shall not be updated")
+
+
+  def test09_vis_stats(self):
+    doc1 = Doc(text=stub_doc1, index=stub_doc1_id)
+    doc2 = Doc(text=stub_doc2, index=stub_doc2_id)
+
+    ic   = IndexController([doc1, doc2])
+
+    ic.build()
+    ii = ic.inv_indexer()
+
+    vis = ii.visualize_stats()
+    self.assertEqual(vis, """   33 (80.49%) terms in    1 docs|..............................|
+    8 (19.51%) terms in    2 docs|........
+""")
 
   def tearDown(self):
     """Triggered after each test"""

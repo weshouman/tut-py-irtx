@@ -14,3 +14,11 @@ Text mining is about capturing information from unstructured text.
 stub_doc2_id = "1451"
 doc1_and_doc2_term_count = 41
 
+stub_doc3 = """
+Morocco did a great job in Fifa World Cup 2022 that was played in Qatar. More information about the match is out of the scope of this text
+"""
+stub_doc3_id = "8888"
+
+stub_doc4 = """
+This document is to test merging documents with a middle document Id, further information could be found in the test body"""
+stub_doc4_id = "3927"

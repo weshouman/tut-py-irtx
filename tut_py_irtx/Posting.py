@@ -60,4 +60,6 @@ class Posting():
     self.count = self.count + 1
 
   def update_tf(self):
+    if self.count == 0:
+      logging.error(f"Posting {self.doc_id} has count of the term set to 0!")
     self.tf = tfidf.calc_tf(self.count)

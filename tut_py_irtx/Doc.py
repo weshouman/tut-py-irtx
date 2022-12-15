@@ -14,14 +14,9 @@ class Doc():
     return self.index < other.index
 
   def __str__(self):
-    out = self.index
-
-    if self.author_id:
-      out += f" \tauthored by {self.author_id}"
-
-    if self.timestamp:
-      out += f" \tat {self.timestamp}"
-
+    out  = self.index
+    out += f" \tauthored by {self.author_id}" if self.author_id else ""
+    out += f" \tat {self.timestamp}"          if self.timestamp else ""
     return out
 
   @staticmethod
@@ -36,7 +31,6 @@ class Doc():
         replace("!", " "). \
         encode('ascii', 'ignore').decode('ascii')
 
-
   @staticmethod
   def fetch_terms(doc):
     """Get a list of terms given a doc"""
@@ -50,4 +44,3 @@ class Doc():
     tokens = text.split()
     terms = [Term(elem, [Posting(doc.index)]) for elem in tokens]
     return terms
-

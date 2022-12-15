@@ -168,10 +168,10 @@ class IndexController():
     return qtfs, qidfs
 
   def get_doc_frequencies(index, doc, queries):
-    """ fetch the tfs and idfs of the terms in the index, that match to the given queries
+    """ fetch the tfs and idfs of the terms in the index, that match the given queries
 
     notes:
-    - docs could be extractedd from the index + queries, but it's kept separate until
+    - docs could be extracted from the index + queries, but it's kept separate until
       it's decided how bad is it to refetch the docs
     - keep unique_terms extraction in sync with get_query_frequencies,
       until it's decided whether it's better to separate the logics
@@ -190,8 +190,8 @@ class IndexController():
       # i = in_sorted(doc_ids, doc.index)
       i = in_sorted(index[uterm.text].occurances, doc)
       if i >= 0:
-        print(f"[DOCMATCH][term:{uterm.text}][count:{index[uterm.text].occurances[i].count}]{doc}")
-        dtfs.append(index[uterm.text].occurances[i].count)
+        logging.debug(f"[DOCMATCH][TERM:{uterm.text:8}] mentioned [{index[uterm.text].occurances[i].count:2} times] in [DOC:{doc}]")
+        dtfs.append(index[uterm.text].occurances[i].tf)
       else:
         dtfs.append(0)
 
@@ -250,11 +250,18 @@ class IndexController():
     ranks = []
     if support_ranking:
       qtfs, qidfs = IndexController.get_query_frequencies(text_list)
+
+      logging.debug(f"[SIMILARITY] [QUERY: {text_list}]")
+      logging.debug(f"[SIMILARITY]   [QTFS]:  {[round(v) for v in qtfs]}\t" + \
+                             f"[QIDFS]: {[round(v) for v in qidfs]}")
       for doc in out_docs:
         dtfs, didfs = IndexController.get_doc_frequencies(self.inv_indexer().index, doc, text_list)
-
         rank = tfidf.get_query_similarity(qtfs, qidfs, dtfs, didfs)
         ranks.append(rank)
+
+        logging.debug(f"[SIMILARITY]   [DTFS]:  {[round(v) for v in dtfs]}\t" + \
+                                     f"[DIDFS]: {[round(v) for v in didfs]}\t" + \
+                                     f"[VALUE: {round(rank*100)}%] [DOC: {doc.doc_id}]")
 
       return out_docs, ranks
 
@@ -279,5 +286,6 @@ class IndexController():
     postings, ranks = self.query_intersection_core(text_list, support_wildcards_kgram=wildcard, support_ranking=ranked)
 
     doc_index = self.doc_indexer().index
+
     return [doc_index[posting.doc_id] for posting in postings] , ranks
 
