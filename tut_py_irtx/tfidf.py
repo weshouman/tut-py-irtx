@@ -2,8 +2,8 @@ import logging
 import math
 import numpy as np
 
-TF_MULTIPLIER  = 10
-IDF_MULTIPLIER = 10
+TF_MULTIPLIER  = 1000
+IDF_MULTIPLIER = 1000
 
 def calc_tf(term_count):
   """
