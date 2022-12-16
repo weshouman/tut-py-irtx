@@ -254,8 +254,14 @@ class LinkedList():
       node = node.next
     return [None, None]
 
+  def prettyprint(self):
+    return Node.prettyprint(self.head)
+
+  def prettyprint_reverse(self):
+    return Node.prettyprint_reverse(self.tail)
+
   def __str__(self):
-    return f"{Node.prettyprint(self.head)}\n{Node.prettyprint_reverse(self.tail)}"
+    return self.prettyprint()
 
   def __len__(self):
     return self.count

@@ -109,8 +109,8 @@ class LinkedListTest(unittest.TestCase):
     ll.inject_before(post, new)
 
     self.assertEqual(len(ll), len(elem_list)+1)
-    self.assertEqual(str(ll), """[1]->[2]->[3]->[4]
-[4]->[3]->[2]->[1]""")
+    self.assertEqual(ll.prettyprint(), "[1]->[2]->[3]->[4]")
+    self.assertEqual(ll.prettyprint_reverse(), "[4]->[3]->[2]->[1]")
 
   def tearDown(self):
     """Triggered after each test"""
