@@ -26,6 +26,12 @@ class Indexer():
     self.build_time = build_time
 
   def set_docs(self, docs):
+    """
+    NOTE: the docs should be reversed before setting them for the first time
+    the IndexController does reverse them before passing,
+    but in case this method gets called from a different location,
+    we'll need to reverse here too
+    """
     # we should make the postings a linked list to avoid the need of sorting docs beforehand
     # Performance needs to be measured though
     if isinstance(docs, Doc):
@@ -34,7 +40,7 @@ class Indexer():
       if len(docs) > 0 and not isinstance(docs[0], Doc):
         raise TypeError(f"Unsupported Document, given type is [{type(Doc)}]")
       else:
-        self.doc_list = docs
+        self.doc_list = sorted(docs, reverse=True)
     elif docs is None:
       # NOTE: This occurs when the IndexController is initialzing the indexer
       #       We may decide to use a single doc_list source if possible
