@@ -223,15 +223,23 @@ class Node():
   def copy(self):
     return Node(self.data)
 
-  def inject(self, nodechain):
+  def inject(self, othernode):
     temp = self.next
 
-    self.next = nodechain
-    nodechain.first.prev = self
+    self.next = othernode
+    othernode.prev = self
 
-    nodechain_end = Node.get_last(nodechain)
-    nodechain_end.next = temp
-    temp.prev = nodechain_end
+    othernode.next = temp
+    temp.prev = othernode
+
+  def inject_chain(self, nodechain):
+    temp = self.next
+
+    self.next = nodechain.head
+    nodechain.head.prev = self
+
+    nodechain.tail.next = temp
+    temp.prev = nodechain.tail
 
   @staticmethod
   def get_last(node):
