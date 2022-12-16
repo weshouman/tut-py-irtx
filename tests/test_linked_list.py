@@ -91,6 +91,27 @@ class LinkedListTest(unittest.TestCase):
     ll.extend_from_list(["algebra", "turtle", "books"])
     self.assertEqual(str(ll.get_slice()), "['cement', 'algebra', 'turtle', 'books']")
 
+
+  def test06_update_ll_after_search(self):
+    """Ordered linkedlist tests"""
+    ll = LinkedList(unique=True, ordered=True)
+    elem_list = [1, 3, 4]
+    for elem in elem_list: ll.add(elem)
+
+    self.assertEqual(len(ll), len(elem_list))
+
+    new = Node(2)
+    occ, post = ll.has(new)
+
+    self.assertEqual(occ, None)
+    self.assertEqual(post.data, len(elem_list))
+
+    ll.inject_before(post, new)
+
+    self.assertEqual(len(ll), len(elem_list)+1)
+    self.assertEqual(str(ll), """[1]->[2]->[3]->[4]
+[4]->[3]->[2]->[1]""")
+
   def tearDown(self):
     """Triggered after each test"""
     logging.debug("tearDown is triggered")

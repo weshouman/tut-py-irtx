@@ -76,6 +76,36 @@ class LinkedList():
 
       self.count = self.count + 1
 
+  def inject_before(self, node, new):
+    """Inject new node before the given node
+
+    NOTE: this is a low level function, which passes the uniqueness and order checks
+    thus it should be used with care, otherwise the linked list may reach
+    an unstable state
+    """
+    # node.prev.inject(new)
+    # self.count += 1
+
+    if node.prev is not None:
+      node.prev.inject(new)
+      self.count += 1
+    else:
+      self.inject_head(new)
+
+  def inject_after(self, node, new):
+    """Inject new node after the given node
+
+    NOTE: this is a low level function, which passes the uniqueness and order checks
+    thus it should be used with care, otherwise the linked list may reach
+    an unstable state
+    """
+    if node.next is not None:
+      node.inject(new)
+      self.count += 1
+    else:
+      self.inject_tail(new)
+
+
   def inject_head(self, node):
     if self.is_empty():
       inject_first(node)
