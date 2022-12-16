@@ -157,24 +157,24 @@ class LinkedList():
     """
     if othernode.data < self.head.data:
       self.inject_head(othernode)
-      return
+      return self.head
 
     if othernode.data == self.head.data:
       if (unique == False):
         # force injecting the head if similar to the original head
         # NOTE: prev_node is not assigned yet
         self.inject_head(othernode)
-      return
+      return self.head
 
     # skip moving through the linkedlist if it's to be appended
     if othernode.data > self.tail.data:
       self.inject_tail(othernode)
-      return
+      return self.tail
 
     if othernode.data == self.tail.data:
       if (unique == False):
         self.inject_tail(othernode)
-      return
+      return self.tail
 
     node = self.head
     # logging.debug(f"{self.head.data:20} | {othernode.data:20} | {self.tail.data:20}")
@@ -183,14 +183,14 @@ class LinkedList():
       prev_node = node
       node = node.next
       if  othernode.data < node.data:
-        prev_node.inject(othernode)
+        newnode = prev_node.inject(othernode)
         self.count = self.count + 1
-        return
+        return newnode
       elif othernode.data == node.data:
         if (unique == False):
-          prev_node.inject(othernode)
+          newnode = prev_node.inject(othernode)
           self.count = self.count + 1
-        return
+        return newnode
 
   def has(self, othernode):
     node = self.head
@@ -201,11 +201,11 @@ class LinkedList():
       #elif node == othernode:
 
       if node.data > othernode.data:
-        return False
+        return None
       elif node.data == othernode.data:
-        return True
+        return node
       node = node.next
-    return False
+    return None
 
   def __str__(self):
     return Node.prettyprint(self.head)
