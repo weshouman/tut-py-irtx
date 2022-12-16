@@ -95,7 +95,7 @@ class InvertedIndexer(Indexer):
     else:
       index_slice = self.index
 
-    out = visualization_header()
+    out = InvertedIndexer.visualization_header()
     for key in self.index.keys():
       out += self.visualize_term(key)
 

@@ -104,7 +104,7 @@ class KGramIndexTest(unittest.TestCase):
 
     samples = ["hello", "inf*"]
     docs = ic.query_intersection_wildcards(samples)
-    self.assertEqual(len(docs), 1, "Simple query is not working: {samples} exists in a single documents")
+    self.assertEqual(len(docs), 1, f"Simple query is not working: {samples} exists in a single documents")
 
     samples = ["*nf*", "*est"]
     docs = ic.query_intersection_wildcards(samples)
