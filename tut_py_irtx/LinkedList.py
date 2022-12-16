@@ -67,6 +67,20 @@ class LinkedList():
 
     return self.head
 
+  def inject_head(self, node):
+    if self.is_empty():
+      self.inject_first(node)
+    else:
+      temp = self.head
+      self.head = node
+
+      self.head.next = temp
+      temp.prev = self.head
+
+      self.count = self.count + 1
+
+    return self.head
+
   def inject_tail(self, node):
     if self.is_empty():
       self.inject_first(node)
@@ -112,20 +126,6 @@ class LinkedList():
       self.inject_tail(new)
 
     return node.next
-
-  def inject_head(self, node):
-    if self.is_empty():
-      self.inject_first(node)
-    else:
-      temp = self.head
-      self.head = node
-
-      self.head.next = temp
-      temp.prev = self.head
-
-      self.count = self.count + 1
-
-    return self.head
 
   def get_count(self):
     node = self.head
