@@ -65,6 +65,8 @@ class LinkedList():
     if node is not None:
       self.count = self.count + 1
 
+    return self.head
+
   def inject_tail(self, node):
     if self.is_empty():
       self.inject_first(node)
@@ -75,6 +77,8 @@ class LinkedList():
       self.tail = node
 
       self.count = self.count + 1
+
+    return self.tail
 
   def inject_before(self, node, new):
     """Inject new node before the given node
@@ -92,6 +96,8 @@ class LinkedList():
     else:
       self.inject_head(new)
 
+    return node.prev
+
   def inject_after(self, node, new):
     """Inject new node after the given node
 
@@ -100,15 +106,16 @@ class LinkedList():
     an unstable state
     """
     if node.next is not None:
-      node.inject(new)
       self.count += 1
+      node.inject(new)
     else:
       self.inject_tail(new)
 
+    return node.next
 
   def inject_head(self, node):
     if self.is_empty():
-      inject_first(node)
+      self.inject_first(node)
     else:
       temp = self.head
       self.head = node
@@ -117,6 +124,8 @@ class LinkedList():
       temp.prev = self.head
 
       self.count = self.count + 1
+
+    return self.head
 
   def get_count(self):
     node = self.head
@@ -285,6 +294,8 @@ class Node():
     othernode.next = temp
     temp.prev = othernode
 
+    return self.next
+
   def inject_chain(self, nodechain):
     temp = self.next
 
@@ -293,6 +304,8 @@ class Node():
 
     nodechain.tail.next = temp
     temp.prev = nodechain.tail
+
+    return self.next
 
   @staticmethod
   def get_last(node):
