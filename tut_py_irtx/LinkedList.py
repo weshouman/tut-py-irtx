@@ -225,7 +225,7 @@ class LinkedList():
     return [None, None]
 
   def __str__(self):
-    return Node.prettyprint(self.head)
+    return f"{Node.prettyprint(self.head)}\n{Node.prettyprint_reverse(self.tail)}"
 
   def __len__(self):
     return self.count
@@ -273,6 +273,17 @@ class Node():
         return f"[{current}]"
       else:
         return f"[{current}]->{Node.prettyprint(current.next)}"
+    # if current is None
+    return ""
+
+  @staticmethod
+  def prettyprint_reverse(node):
+    current = node
+    while (current is not None):
+      if (current.prev is None):
+        return f"[{current}]"
+      else:
+        return f"[{current}]->{Node.prettyprint_reverse(current.prev)}"
     # if current is None
     return ""
 
