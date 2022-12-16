@@ -185,7 +185,7 @@ class IndexController():
     dtfs = []
     didfs = []
 
-    for i, uterm in enumerate(unique_terms):
+    for uterm in unique_terms:
       # doc_ids = [occ.doc_id for occ in index[uterm.text].occurances]
       # i = in_sorted(doc_ids, doc.index)
       i = in_sorted(index[uterm.text].occurances, doc)
