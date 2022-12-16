@@ -70,7 +70,10 @@ class LinkedList():
       self.inject_first(node)
     else:
       self.tail.next = node
+      node.prev = self.tail
+
       self.tail = node
+
       self.count = self.count + 1
 
   def inject_head(self, node):
@@ -79,7 +82,10 @@ class LinkedList():
     else:
       temp = self.head
       self.head = node
+
       self.head.next = temp
+      temp.prev = self.head
+
       self.count = self.count + 1
 
   def get_count(self):
@@ -186,12 +192,6 @@ class LinkedList():
           self.count = self.count + 1
         return
 
-  def inject_head(self, node):
-    temp = self.head
-    self.head = node
-    self.head.next = temp
-    self.count = self.count + 1
-
   def has(self, othernode):
     node = self.head
     while(node is not None):
@@ -218,15 +218,20 @@ class Node():
   def __init__(self, data):
     self.data = data
     self.next = None
+    self.prev = None
 
   def copy(self):
     return Node(self.data)
 
   def inject(self, nodechain):
     temp = self.next
+
     self.next = nodechain
+    nodechain.first.prev = self
+
     nodechain_end = Node.get_last(nodechain)
     nodechain_end.next = temp
+    temp.prev = nodechain_end
 
   @staticmethod
   def get_last(node):
