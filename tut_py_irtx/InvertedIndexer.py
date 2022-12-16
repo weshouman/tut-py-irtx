@@ -213,9 +213,7 @@ class InvertedIndexer(Indexer):
             #occ = inv_index[term.text].occurances.inject_ordered(t_occurance_copy)
             # we save some time when possible by doing low level interaction with the ll
             if (stop is not None):
-              stop.prev = t_occurance_copy
-              t_occurance_copy.next = stop
-              inv_index[term.text].occurances.count += 1
+              inv_index[term.text].occurances.inject_before(stop, t_occurance_copy)
               occ = t_occurance_copy
             else:
               # we had to go through all the ll, thus we have a greater occurance than
