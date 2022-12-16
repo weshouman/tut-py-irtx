@@ -187,7 +187,7 @@ class IndexController():
 
     for uterm in unique_terms:
       occ = index[uterm.text].occurances.has(Node(posting))
-      if i >= 0:
+      if occ is not None:
         logging.debug(f"[DOCMATCH][TERM:{uterm.text:8}] mentioned [{occ.data.count:2} times] in [DOC:{posting}]")
         dtfs.append(occ.data.tf)
       else:

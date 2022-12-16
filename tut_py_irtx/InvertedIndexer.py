@@ -198,16 +198,27 @@ class InvertedIndexer(Indexer):
         #if term.occurances[0] in indices[term.text].occurances:
         t_occurance = term.occurances.head
         while t_occurance is not None:
-          occ = inv_index[term.text].occurances.has(t_occurance)
+          occ, stop = inv_index[term.text].occurances.has(t_occurance)
 
           posting_index = -1
-          if occ is not None:
+          if (occ is not None):
             log.debug(f"[MERGE][TERM: {term.text:10}][AMEND POSTING: {t_occurance.data.doc_id}]")
             inc_term_count += 1
           else:
             log.debug(f"[MERGE][TERM: {term.text:10}][NEW   POSTING: {t_occurance.data.doc_id}]")
             new_posting_count += 1
-            occ = inv_index[term.text].occurances.inject_ordered(t_occurance)
+
+            # instead of going through the list again
+            #occ = inv_index[term.text].occurances.inject_ordered(t_occurance)
+            # we save some time when possible by doing low level interaction with the ll
+            if (stop is not None):
+              occ.prev = t_occurance
+              t_occurance.next = occ
+              inv_index[term.text].occurances.count += 1
+            else:
+              # we had to go through all the ll, thus we have a greater occurance than
+              # all the others
+              occ = inv_index[term.text].occurances.inject_tail(t_occurance)
 
           occ.data.increase_count()
           if (InvertedIndexer.useTFIDF and update_tfs):

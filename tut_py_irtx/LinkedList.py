@@ -153,7 +153,7 @@ class LinkedList():
 
     It is discouraged to check `has(node)` before calling
     `inject_ordered()` as we already move through the linked list
-    while injecting in order
+    while injecting in order.
     """
     if othernode.data < self.head.data:
       self.inject_head(othernode)
@@ -193,6 +193,23 @@ class LinkedList():
         return newnode
 
   def has(self, othernode):
+    """
+
+    Return
+    ------
+    match : Node
+      The matching node if found
+
+    stop : Node
+      The node that resulted in stopping the search
+      - If this is the same node as the match one, then it was found
+      - If this is a different node, then it's the reason of invalidation
+        That way we don't need to inject_ordered after it, we could just
+        inject before
+
+    Note we did not need to return both nodes, only one would be enough
+    but it's always preferrable to keep the logic as simple as possible
+    """
     node = self.head
     while(node is not None):
       # comparison through the __lt__ and __eq__ consumes a lot of time as this method is extensively used, and optimizing it is a necessity
@@ -201,11 +218,11 @@ class LinkedList():
       #elif node == othernode:
 
       if node.data > othernode.data:
-        return None
+        return [None, node]
       elif node.data == othernode.data:
-        return node
+        return [node, node]
       node = node.next
-    return None
+    return [None, None]
 
   def __str__(self):
     return Node.prettyprint(self.head)
