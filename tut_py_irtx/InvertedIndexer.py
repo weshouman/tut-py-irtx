@@ -199,6 +199,7 @@ class InvertedIndexer(Indexer):
         t_occurance = term.occurances.head
         while t_occurance is not None:
           occ, stop = inv_index[term.text].occurances.has(t_occurance)
+          t_occurance_copy = Node(t_occurance.data)
 
           posting_index = -1
           if (occ is not None):
@@ -209,16 +210,17 @@ class InvertedIndexer(Indexer):
             new_posting_count += 1
 
             # instead of going through the list again
-            #occ = inv_index[term.text].occurances.inject_ordered(t_occurance)
+            #occ = inv_index[term.text].occurances.inject_ordered(t_occurance_copy)
             # we save some time when possible by doing low level interaction with the ll
             if (stop is not None):
-              occ.prev = t_occurance
-              t_occurance.next = occ
+              stop.prev = t_occurance_copy
+              t_occurance_copy.next = stop
               inv_index[term.text].occurances.count += 1
+              occ = t_occurance_copy
             else:
               # we had to go through all the ll, thus we have a greater occurance than
               # all the others
-              occ = inv_index[term.text].occurances.inject_tail(t_occurance)
+              occ = inv_index[term.text].occurances.inject_tail(t_occurance_copy)
 
           occ.data.increase_count()
           if (InvertedIndexer.useTFIDF and update_tfs):
