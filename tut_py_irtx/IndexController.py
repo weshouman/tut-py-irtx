@@ -78,7 +78,7 @@ class IndexController():
       if len(docs) > 0 and not isinstance(docs[0], Doc):
         raise TypeError("Unsupported Document type")
       else:
-        self.doc_list = sorted(docs)
+        self.doc_list = sorted(docs, reverse=True)
     else:
       raise TypeError("Unsupported Document type")
 

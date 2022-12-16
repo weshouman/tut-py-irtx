@@ -34,7 +34,7 @@ class Indexer():
       if len(docs) > 0 and not isinstance(docs[0], Doc):
         raise TypeError(f"Unsupported Document, given type is [{type(Doc)}]")
       else:
-        self.doc_list = sorted(docs)
+        self.doc_list = docs
     elif docs is None:
       # NOTE: This occurs when the IndexController is initialzing the indexer
       #       We may decide to use a single doc_list source if possible
