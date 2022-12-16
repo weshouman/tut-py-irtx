@@ -58,7 +58,7 @@ class InvIndexTest(unittest.TestCase):
 
     log.debug("Inverted Index shall have the expected terms")
     self.assertTrue("hello" in inv_index, "index hello is not created")
-    posting_ids = [elem.doc_id for elem in inv_index["hello"].occurances]
+    posting_ids = [elem.doc_id for elem in inv_index["hello"].get_first_n_occurances(0)]
     log.debug("Inverted Index shall have the expected terms set correctly")
     self.assertListEqual(posting_ids, [id1], "index hello is not set correctly")
 
@@ -67,13 +67,13 @@ class InvIndexTest(unittest.TestCase):
 
     log.debug("Inverted Index shall have the expected terms")
     self.assertTrue("hello" in inv_index, "index hello is not created")
-    posting_ids = [elem.doc_id for elem in inv_index["hello"].occurances]
+    posting_ids = [elem.doc_id for elem in inv_index["hello"].get_first_n_occurances(0)]
     log.debug("Inverted Index shall have the expected terms set correctly")
     self.assertListEqual(posting_ids, [id1], "index hello is not set correctly")
 
     log.debug("Inverted Index shall have the expected terms")
     self.assertTrue("test" in inv_index, "index test is not created")
-    posting_ids = [elem.doc_id for elem in inv_index["test"].occurances]
+    posting_ids = [elem.doc_id for elem in inv_index["test"].get_first_n_occurances(0)]
     # the docs shall get sorted, thus id2 shall preceed id1
     log.debug("Inverted Index shall have the expected terms set correctly")
     self.assertListEqual(posting_ids, [id2, id1], "index test is not set in order, thus sorted based searching would fail")
@@ -144,11 +144,11 @@ class InvIndexTest(unittest.TestCase):
     inv_index = ic.get_inv_index()
 
     sample = "information"
-    docs = ic.query_intersection(sample)
+    docs, _ = ic.query_intersection(sample)
     self.assertEqual(len(docs), inv_index[sample].count, "Simple query is not working: 'information' exists in both the documents")
 
     samples = ["infromation", "test"]
-    docs = ic.query_intersection(samples)
+    docs, _ = ic.query_intersection(samples)
     self.assertEqual(len(docs), 2, "Query intersection is not working: 'information' and 'test' is found in both the documents, we should get both the docs")
 
     logging.debug("\n")
@@ -237,14 +237,14 @@ class InvIndexTest(unittest.TestCase):
     ii = ic.inv_indexer()
 
     # affect some term
-    ii.index["some"].occurances[0].tf = 9999
+    ii.index["some"].occurances.head.data.tf = 9999
 
     # Merge a new doc
     terms = Doc.fetch_terms(doc3)
 
     ii.index = InvertedIndexer.merge_terms(ii.index, terms)
 
-    self.assertEqual(ii.index["some"].occurances[0].tf, 9999, "the occurances shall not be changed")
+    self.assertEqual(ii.index["some"].occurances.head.data.tf, 9999, "the occurances shall not be changed")
 
     # NOTE: the idf calculation is not (at least for now) in scope for the merge
     self.assertEqual(str(ii), """[TERM          - DOC_COUNT - IDF] -> [DOC - TERM_COUNT - TF]
@@ -326,8 +326,8 @@ class InvIndexTest(unittest.TestCase):
     ii.index = InvertedIndexer.merge_terms(ii.index, terms, update_tfs=False)
     print(ii)
 
-    self.assertEqual(ii.index["imagine"].occurances[0].count, 1, "the occurance count shall be updated")
-    self.assertEqual(ii.index["imagine"].occurances[0].tf, 0, "the term frequencies shall not be updated")
+    self.assertEqual(ii.index["imagine"].occurances.head.data.count, 1, "the occurance count shall be updated")
+    self.assertEqual(ii.index["imagine"].occurances.head.data.tf, 0, "the term frequencies shall not be updated")
 
 
   def test09_vis_stats(self):

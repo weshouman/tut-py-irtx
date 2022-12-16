@@ -32,7 +32,7 @@ class LinkedListTest(unittest.TestCase):
     self.assertEqual(len(ll), 2)
     self.assertEqual(ll.get_count(), 2, "LinkedList.get_count() shall report 2")
     self.assertEqual(ll.get_slice(), ["abc", "def"], "LinkedList.get_slice(5) shall bring by max the 2 elements")
-    self.assertEqual(ll.has(Node("abc")), True, "LinkedList.has(node) shall report having the node")
+    self.assertNotEqual(ll.has(Node("abc")), None, "LinkedList.has(node) shall report having the node")
     ll.inject_ordered(Node("bcd"))
     self.assertEqual(ll.get_count(), 3, "LinkedList.get_count() shall report 3")
     ll.inject_ordered(Node("abc"), unique=True)

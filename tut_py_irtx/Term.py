@@ -1,34 +1,46 @@
 import tut_py_irtx.util as util
 import tut_py_irtx.tfidf as tfidf
+from tut_py_irtx.LinkedList import *
 
 class Term():
   """A term contains a text, the occurances list and the occurances count"""
 
-  def __init__(self, text, occurances=None):
+  def __init__(self, text, occurances=None, hot_load=True):
     self.text = Term.normalize(text)
 
-    if occurances == None:
-      self.occurances = []
-    else:
-      self.occurances = occurances
+    self.buffer = occurances
+    self.hot_load = hot_load
+    self.populated = False
+
+    self.occurances = LinkedList(unique=True, ordered=True)
+
+    if self.hot_load:
+      self.populate_from_buffer()
 
     self.idf = 0
 
   verbose = False
   DEFAULT_VERBOSE_OCCURANCE_COUNT = 3
 
+  def populate_from_buffer(self):
+    """Follow populte_from_buffer for Gram.py"""
+    for occ in self.buffer:
+      self.occurances.add(occ)
+
+    self.populated = True
+
   @classmethod
   def normalize(cls, text):
     return util.normalize(text)
 
   def update_count(self):
-    self.count = len(self.occurances)
+    self.count = self.occurances.count
 
   def update_idf(self, total_docs):
     self.idf = tfidf.calc_idf(self.count, total_docs)
 
   def get_first_n_occurances(self, n=DEFAULT_VERBOSE_OCCURANCE_COUNT):
-    return self.occurances[:n]
+    return self.occurances.get_slice(n)
 
   def __lt__(self, other):
     return self.text < other.text

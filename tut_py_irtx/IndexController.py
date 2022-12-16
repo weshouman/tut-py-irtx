@@ -167,7 +167,7 @@ class IndexController():
 
     return qtfs, qidfs
 
-  def get_doc_frequencies(index, doc, queries):
+  def get_doc_frequencies(index, posting, queries):
     """ fetch the tfs and idfs of the terms in the index, that match the given queries
 
     notes:
@@ -186,12 +186,10 @@ class IndexController():
     didfs = []
 
     for uterm in unique_terms:
-      # doc_ids = [occ.doc_id for occ in index[uterm.text].occurances]
-      # i = in_sorted(doc_ids, doc.index)
-      i = in_sorted(index[uterm.text].occurances, doc)
+      occ = index[uterm.text].occurances.has(Node(posting))
       if i >= 0:
-        logging.debug(f"[DOCMATCH][TERM:{uterm.text:8}] mentioned [{index[uterm.text].occurances[i].count:2} times] in [DOC:{doc}]")
-        dtfs.append(index[uterm.text].occurances[i].tf)
+        logging.debug(f"[DOCMATCH][TERM:{uterm.text:8}] mentioned [{occ.data.count:2} times] in [DOC:{posting}]")
+        dtfs.append(occ.data.tf)
       else:
         dtfs.append(0)
 
@@ -230,12 +228,12 @@ class IndexController():
             # posting_ids = [posting.doc_id for posting in term.occurances]
             # we don't use term.occurances directly for text_docs,
             # as the occurances(Posting type) is not hashable, which should be the case
-            text_docs = get_joint(text_docs, term.occurances)
+            text_docs = get_joint(text_docs, term.get_first_n_occurances(0))
 
       else:
         term = ii.get_corresponding_term(util.normalize(text))
         if term is not None:
-          text_docs = term.occurances
+          text_docs = term.get_first_n_occurances(0)
 
       # enable for extensive debugging only
       # logging.debug(f"[{text}] found in the docs: {text_docs}")

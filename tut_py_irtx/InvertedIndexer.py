@@ -108,7 +108,7 @@ class InvertedIndexer(Indexer):
     return header
 
   def visualize_term(self, term_text):
-    tfs = [ f"{occ.doc_id} - {occ.count} - {round(occ.tf):5}" for occ in self.index[term_text].occurances[0:self.MAX_OCCURANCES]]
+    tfs = [ f"{occ.doc_id} - {occ.count} - {round(occ.tf):5}" for occ in self.index[term_text].get_first_n_occurances(self.MAX_OCCURANCES)]
     # visualize more than 3 elements
     tfs_str = f"{tfs}" if self.index[term_text].count <= self.MAX_OCCURANCES else f"{str(tfs)[:-1]},...]"
     return f"[{term_text:18}- {self.index[term_text].count:4} -{round(self.index[term_text].idf):5}] -> {tfs_str}\n"
@@ -183,35 +183,37 @@ class InvertedIndexer(Indexer):
         new_term_count += 1
         inv_index.setdefault(term.text, term)
 
-        for occurance in inv_index[term.text].occurances:
-          occurance.increase_count()
+        occ = inv_index[term.text].occurances.head
+        while occ is not None:
+          occ.data.increase_count()
           if (InvertedIndexer.useTFIDF and update_tfs):
-            occurance.update_tf()
+            occ.data.update_tf()
+
+          occ = occ.next
 
       else:
         # posting_count_pre = len(inv_index[term.text].occurances)
         # Doing this check increases the time for a large dataset
         #   ~20 times from 4 to 63 seconds
         #if term.occurances[0] in indices[term.text].occurances:
-        for occurance in term.occurances:
-
-          index = in_sorted(inv_index[term.text].occurances, occurance)
+        t_occurance = term.occurances.head
+        while t_occurance is not None:
+          occ = inv_index[term.text].occurances.has(t_occurance)
 
           posting_index = -1
-          if index >= 0:
-            log.debug(f"[MERGE][TERM: {term.text:10}][AMEND POSTING: {occurance.doc_id}]")
+          if occ is not None:
+            log.debug(f"[MERGE][TERM: {term.text:10}][AMEND POSTING: {t_occurance.data.doc_id}]")
             inc_term_count += 1
-            posting_index = index
           else:
-            log.debug(f"[MERGE][TERM: {term.text:10}][NEW   POSTING: {occurance.doc_id}]")
+            log.debug(f"[MERGE][TERM: {term.text:10}][NEW   POSTING: {t_occurance.data.doc_id}]")
             new_posting_count += 1
-            inv_index[term.text].occurances.append(occurance)
-            posting_index = len(inv_index[term.text].occurances)-1
+            occ = inv_index[term.text].occurances.inject_ordered(t_occurance)
 
-          inv_index[term.text].occurances[posting_index].increase_count()
+          occ.data.increase_count()
           if (InvertedIndexer.useTFIDF and update_tfs):
-            inv_index[term.text].occurances[index].update_tf()
+            occ.data.update_tf()
 
+          t_occurance = t_occurance.next
 
       inv_index[term.text].update_count()
 
