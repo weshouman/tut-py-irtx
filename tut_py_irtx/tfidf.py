@@ -76,6 +76,10 @@ def get_query_similarity(qtf_list, qidf_list, dtf_list, didf_list, tfweight=1, i
 
   logging.debug(f"\n[q:{q}] \t[d:{d}] \t[qd:{qd}] \t[qlen is {qlen}] \t[dlen is {dlen}]")
 
-  similarity = qd / (qlen * dlen)
+  if qlen * dlen  == 0:
+    # happens when all the query's words have an IDF of zero (used in all the documents)
+    similarity = 1
+  else:
+    similarity = qd / (qlen * dlen)
 
   return similarity
