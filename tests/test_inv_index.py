@@ -145,11 +145,11 @@ class InvIndexTest(unittest.TestCase):
     inv_index = ic.get_inv_index()
 
     sample = "information"
-    docs, _ = ic.query_intersection(sample)
+    docs = ic.query_intersection(sample)
     self.assertEqual(len(docs), inv_index[sample].count, "Simple query is not working: 'information' exists in both the documents")
 
     samples = ["information", "test"]
-    docs, _ = ic.query_intersection(samples)
+    docs = ic.query_intersection(samples)
     self.assertEqual(len(docs), 2, "Query intersection is not working: 'information' and 'test' is found in both the documents, we should get both the docs")
 
     logging.debug("\n")

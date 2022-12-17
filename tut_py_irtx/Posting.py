@@ -36,6 +36,8 @@ class Posting():
     self.count = 0
     self.tf = 0
 
+    self.rank = 0
+
   def __lt__(self, other):
     if Posting.sort_algo == SORT_BY_DOC_ID:
       return self.doc_id < other.doc_id

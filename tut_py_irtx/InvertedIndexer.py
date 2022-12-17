@@ -170,7 +170,7 @@ class InvertedIndexer(Indexer):
     # the added term's posting was considered a new or an old posting (amendment)
     # for example, if addition was not in order, the in_sorted would return a wrong decision
     # thus new postings would be added, when they should be only amended
-    #logging.getLogger( "InvertedIndexer.merge_terms" ).setLevel( logging.INFO )
+    # logging.getLogger( "InvertedIndexer.merge_terms" ).setLevel( logging.DEBUG )
 
     new_term_count = 0
     inc_term_count = 0

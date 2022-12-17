@@ -23,15 +23,18 @@ class RankingTest(unittest.TestCase):
   @classmethod
   def setUpClass(cls):
     """Triggered before all class tests"""
-    logging.debug("setUpModule is triggered")
+    cls.log.debug("setUpModule is triggered")
 
-    # Build the index only once before the different tests
-    id1  = stub_doc1_id
-    id2  = stub_doc2_id
-    doc1 = Doc(text=stub_doc1, index=id1)
-    doc2 = Doc(text=stub_doc2, index=id2)
+    from essential_generators import DocumentGenerator
+    docs = []
+    gen = DocumentGenerator()
+    gen.init_word_cache(5000)
+    gen.init_sentence_cache(5000)
 
-    docs = [doc1, doc2]
+    for i in range(500):
+      gen_doc = gen.paragraph()
+      doc = Doc(text=gen_doc, index=i)
+      docs.append(doc)
 
     cls.ic = IndexController(docs)
     cls.ic.indexers = cls.ic.indexers[0:2] # remove the kgram indexer
@@ -40,23 +43,51 @@ class RankingTest(unittest.TestCase):
 
   def setUp(self):
     """Triggered before each test"""
-    logging.debug("setUp is triggered")
+    self.log.debug("setUp is triggered")
+
+  @staticmethod
+  def print_ranked_docs(docs, page=10):
+    count = 0
+
+    print(f"Found {len(docs)} matches")
+    for i, doc in enumerate(docs, 1):
+      if (count < page):
+        print(f"result {i:3}: [RANK: {round(doc.rank*100,2):5.2f}%] [DOC: {doc.index}]")
+        if doc.rank > 0.85:
+          print(doc.text + "\n")
+        count = count+1
 
   def test01_calc_rank(self):
     """The term frequency is correctly computed"""
-
     ic = self.ic
 
-    ii = ic.inv_indexer()
-    inv_index = ii.index
+    queries = ["great", "is"]
+    docs = ic.query_intersection(queries, ranked=True)
+
+    RankingTest.print_ranked_docs(docs)
+
+    self.assertNotEqual(len(docs), 0, f"some documents should be matching the queries {queries}")
+
+  def test02_calc_rank_compact(self):
+    # Build the index only once before the different tests
+    id1  = stub_doc1_id
+    id2  = stub_doc2_id
+    doc1 = Doc(text=stub_doc1, index=id1)
+    doc2 = Doc(text=stub_doc2, index=id2)
+
+    docs = [doc1, doc2]
+
+    ic = IndexController(docs)
+    ic.indexers = ic.indexers[0:2] # remove the kgram indexer
+
+    ic.build()
 
     queries = ["information", "retrieval"]
-    docs, ranks = ic.query_intersection(queries, ranked=True)
+    docs = ic.query_intersection(queries, ranked=True)
 
-    for i, doc in enumerate(docs):
-      print(f"{i:3}: [RANK: {round(ranks[i]*100,2):5.2f}%] [DOC: {doc.index}]")
+    RankingTest.print_ranked_docs(docs)
 
-    self.assertNotEqual(len(docs), 0, f"2 documents should be matching to the queries {queries}")
+    self.assertNotEqual(len(docs), 0, f"some documents should be matching the queries {queries}")
 
   def tearDown(self):
     """Triggered after each test"""

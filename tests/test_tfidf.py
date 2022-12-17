@@ -76,19 +76,19 @@ class TFIDFTest(unittest.TestCase):
     # sweet is rarer than home 
     didf = [2 * idfmul, 3.3 * idfmul]
 
-    similarity = tfidf.get_query_similarity(qtf, qidf, dtf, didf)
+    similarity, _ = tfidf.get_query_similarity(qtf, qidf, dtf, didf)
     self.assertEqual(round(similarity, 4), 0.9967)
 
     # sweet is as rare as home 
     didf = [2 * idfmul, 2 * idfmul]
 
-    similarity = tfidf.get_query_similarity(qtf, qidf, dtf, didf)
+    similarity, _ = tfidf.get_query_similarity(qtf, qidf, dtf, didf)
     self.assertEqual(round(similarity, 4), 0.9487)
 
     # document -> has `sweet` twice as much it has `home``
     dtf  = [1 * tfmul, 2 * tfmul]
 
-    similarity = tfidf.get_query_similarity(qtf, qidf, dtf, didf)
+    similarity, _ = tfidf.get_query_similarity(qtf, qidf, dtf, didf)
     self.assertEqual(round(similarity, 7), 1)
 
   def tearDown(self):

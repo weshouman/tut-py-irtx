@@ -211,9 +211,13 @@ class IndexController():
     list
       Docs corresponding to the given query text_list
     """
+    log = logging.getLogger("query")
+    # logging.getLogger( "query" ).setLevel( logging.DEBUG )
     ii = self.inv_indexer()
 
-    out_docs = []
+    out_docs_intersect = []
+    out_docs_join      = []
+
     for i, text in enumerate(text_list):
       text_docs = []
 
@@ -235,35 +239,40 @@ class IndexController():
           text_docs = term.get_first_n_occurances(-1)
 
       # enable for extensive debugging only
-      # logging.debug(f"[{text}] found in the docs: {text_docs}")
+      # log.debug(f"[{text}] found in the docs: {text_docs}")
 
       if i == 0:
-        out_docs = text_docs
+        out_docs_intersect = text_docs
+        out_docs_join      = text_docs
       else:
-        out_docs = get_intersection_of_sorted(sorted(out_docs), sorted(text_docs))
+        out_docs_intersect = get_intersection_of_sorted(sorted(out_docs_intersect), sorted(text_docs))
+        out_docs_join      = get_joint(out_docs_join, text_docs)
 
-      logging.info(f"[DOC-INTERSECTION][TERM:{text}]: {out_docs}")
+      log.info(f"[DOC-INTERSECTION][TERM:{text}]: {[d.doc_id for d in out_docs_intersect]}")
 
     ranks = []
     if support_ranking:
       qtfs, qidfs = IndexController.get_query_frequencies(text_list)
 
-      logging.debug(f"[SIMILARITY] [QUERY: {text_list}]")
-      logging.debug(f"[SIMILARITY]   [QTFS]:  {[round(v) for v in qtfs]}\t" + \
+      log.debug(f"[SIMILARITY] [QUERY: {text_list}]")
+      log.debug(f"[SIMILARITY]   [QTFS]:  {[round(v) for v in qtfs]}\t" + \
                              f"[QIDFS]: {[round(v) for v in qidfs]}")
-      for doc in out_docs:
+      for doc in set(out_docs_join):
         dtfs, didfs = IndexController.get_doc_frequencies(self.inv_indexer().index, doc, text_list)
-        rank = tfidf.get_query_similarity(qtfs, qidfs, dtfs, didfs)
+        rank, err = tfidf.get_query_similarity(qtfs, qidfs, dtfs, didfs)
         ranks.append(rank)
 
-        logging.debug(f"[SIMILARITY]   [DTFS]:  {[round(v) for v in dtfs]}\t" + \
+        if err != None:
+          print(err)
+
+        log.debug(f"[SIMILARITY]   [DTFS]:  {[round(v) for v in dtfs]}\t" + \
                                      f"[DIDFS]: {[round(v) for v in didfs]}\t" + \
                                      f"[VALUE: {round(rank*100)}%] [DOC: {doc.doc_id}]")
 
-      return out_docs, ranks
+      return out_docs_join, ranks
 
     # else
-    return out_docs, ranks
+    return out_docs_intersect, ranks
 
   def query_intersection_wildcards(self, text):
     return self.query_intersection(text, True)
@@ -284,5 +293,18 @@ class IndexController():
 
     doc_index = self.doc_indexer().index
 
-    return [doc_index[posting.doc_id] for posting in postings] , ranks
+    if ranked:
+      # set doc ranks
+      docs = []
+      for i, posting in enumerate(postings):
+        doc = doc_index[posting.doc_id]
+        doc.rank = ranks[i]
+        docs.append(doc)
+
+      docs.sort(key=lambda x:x.rank, reverse=True)
+
+    else:
+      docs = [doc_index[posting.doc_id] for posting in postings]
+
+    return  docs
 

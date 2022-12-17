@@ -61,6 +61,7 @@ def get_query_similarity(qtf_list, qidf_list, dtf_list, didf_list, tfweight=1, i
   didf_list : list of int 
     inverted document frequencies of document elements
   """
+  err = None
   # Prepare arrays
   qtf  = np.array(qtf_list)
   qidf = np.array(qidf_list)
@@ -79,7 +80,8 @@ def get_query_similarity(qtf_list, qidf_list, dtf_list, didf_list, tfweight=1, i
   if qlen * dlen  == 0:
     # happens when all the query's words have an IDF of zero (used in all the documents)
     similarity = 1
+    err = "provided query is very common"
   else:
     similarity = qd / (qlen * dlen)
 
-  return similarity
+  return similarity, err
