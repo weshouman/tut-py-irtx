@@ -323,15 +323,12 @@ class InvIndexTest(unittest.TestCase):
     ii = ic.inv_indexer()
 
     # Merge a new doc
-    print(ii)
     terms = Doc.fetch_terms(doc2)
 
     ii.index = InvertedIndexer.merge_terms(ii.index, terms, update_tfs=False)
-    print(ii)
 
     self.assertEqual(ii.index["imagine"].occurances.head.data.count, 1, "the occurance count shall be updated")
     self.assertEqual(ii.index["imagine"].occurances.head.data.tf, 0, "the term frequencies shall not be updated")
-
 
   def test09_vis_stats(self):
     doc1 = Doc(text=stub_doc1, index=stub_doc1_id)
