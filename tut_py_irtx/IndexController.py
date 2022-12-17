@@ -257,13 +257,18 @@ class IndexController():
       log.debug(f"[SIMILARITY] [QUERY: {text_list}]")
       log.debug(f"[SIMILARITY]   [QTFS]:  {[round(v) for v in qtfs]}\t" + \
                              f"[QIDFS]: {[round(v) for v in qidfs]}")
+
+      if sum(qidfs) == 0:
+        log.warning("Given query is very common in our dictionary, \
+                     that all the words are included in all the docs")
+
       for doc in set(out_docs_join):
         dtfs, didfs = IndexController.get_doc_frequencies(self.inv_indexer().index, doc, text_list)
         rank, err = tfidf.get_query_similarity(qtfs, qidfs, dtfs, didfs)
         ranks.append(rank)
 
         if err != None:
-          print(err)
+          log.debug(err)
 
         log.debug(f"[SIMILARITY]   [DTFS]:  {[round(v) for v in dtfs]}\t" + \
                                      f"[DIDFS]: {[round(v) for v in didfs]}\t" + \

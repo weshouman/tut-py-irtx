@@ -46,10 +46,12 @@ class RankingTest(unittest.TestCase):
     self.log.debug("setUp is triggered")
 
   @staticmethod
-  def print_ranked_docs(docs, page=10):
+  def print_ranked_docs(docs, query=None, page=10):
+    query_cache = query if query is not None else []
+
     count = 0
 
-    print(f"Found {len(docs)} matches")
+    print(f"Found {len(docs)} matches for {query_cache}")
     for i, doc in enumerate(docs, 1):
       if (count < page):
         print(f"result {i:3}: [RANK: {round(doc.rank*100,2):5.2f}%] [DOC: {doc.index}]")
@@ -64,7 +66,7 @@ class RankingTest(unittest.TestCase):
     queries = ["great", "is"]
     docs = ic.query_intersection(queries, ranked=True)
 
-    RankingTest.print_ranked_docs(docs)
+    RankingTest.print_ranked_docs(docs, queries)
 
     self.assertNotEqual(len(docs), 0, f"some documents should be matching the queries {queries}")
 
@@ -85,7 +87,7 @@ class RankingTest(unittest.TestCase):
     queries = ["information", "retrieval"]
     docs = ic.query_intersection(queries, ranked=True)
 
-    RankingTest.print_ranked_docs(docs)
+    RankingTest.print_ranked_docs(docs, queries)
 
     self.assertNotEqual(len(docs), 0, f"some documents should be matching the queries {queries}")
 
