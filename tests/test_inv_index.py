@@ -130,7 +130,6 @@ class InvIndexTest(unittest.TestCase):
       err = f"the term '{i.text}' got assigned more than the number of given documents, most probably the term showed more than the doc count"
       self.assertLessEqual(i.count, 2, err)
 
-  @unittest.skip("WIP")
   def test04_query_test(self):
     """query() shall return relevant documents to the given term"""
 
@@ -157,7 +156,6 @@ class InvIndexTest(unittest.TestCase):
     logging.debug("---\n".join([ doc.index + ": " + doc.text for doc in docs]))
     logging.debug("---")
 
-  @unittest.skip("WIP")
   def test05_regex_docs(self):
     doc1 = Doc(text=stub_doc1, index=stub_doc1_id)
     doc2 = Doc(text=stub_doc2, index=stub_doc2_id)
@@ -227,7 +225,6 @@ class InvIndexTest(unittest.TestCase):
 [mining            -    1 -  301] -> ['1451 - 1 -  1000']
 [unstructured      -    1 -  301] -> ['1451 - 1 -  1000']
 """)
-
 
   def test07_merge_add_new_only(self):
     """Test adding a new doc and merging its terms without touching previous terms that did not get affected"""
