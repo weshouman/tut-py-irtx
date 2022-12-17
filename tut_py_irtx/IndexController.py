@@ -181,12 +181,11 @@ class IndexController():
     terms = Doc.fetch_terms(queryDoc)
     unique_terms = set(terms)
 
-    ranks = []
     dtfs = []
     didfs = []
 
     for uterm in unique_terms:
-      occ = index[uterm.text].occurances.has(Node(posting))
+      occ, _ = index[uterm.text].occurances.has(Node(posting))
       if occ is not None:
         logging.debug(f"[DOCMATCH][TERM:{uterm.text:8}] mentioned [{occ.data.count:2} times] in [DOC:{posting}]")
         dtfs.append(occ.data.tf)
