@@ -99,15 +99,15 @@ class KGramIndexTest(unittest.TestCase):
     index_controller = ic.build()
 
     sample = "inf*"
-    docs = ic.query_intersection_wildcards(sample)
+    docs, _ = ic.query_intersection_wildcards(sample)
     self.assertEqual(len(docs), 2, "Simple query is not working: 'information' exists in both the documents")
 
     samples = ["hello", "inf*"]
-    docs = ic.query_intersection_wildcards(samples)
+    docs, _ = ic.query_intersection_wildcards(samples)
     self.assertEqual(len(docs), 1, f"Simple query is not working: {samples} exists in a single documents")
 
     samples = ["*nf*", "*est"]
-    docs = ic.query_intersection_wildcards(samples)
+    docs, _ = ic.query_intersection_wildcards(samples)
     self.assertEqual(len(docs), 2, "Query intersection is not working: 'information' and 'test' is found in both the documents, we should get both the docs")
 
     logging.debug("\n")
