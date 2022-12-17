@@ -58,7 +58,8 @@ class InvIndexTest(unittest.TestCase):
 
     log.debug("Inverted Index shall have the expected terms")
     self.assertTrue("hello" in inv_index, "index hello is not created")
-    posting_ids = [elem.doc_id for elem in inv_index["hello"].get_first_n_occurances(0)]
+
+    posting_ids = [elem.doc_id for elem in inv_index["hello"].get_first_n_occurances(-1)]
     log.debug("Inverted Index shall have the expected terms set correctly")
     self.assertListEqual(posting_ids, [id1], "index hello is not set correctly")
 
@@ -67,13 +68,13 @@ class InvIndexTest(unittest.TestCase):
 
     log.debug("Inverted Index shall have the expected terms")
     self.assertTrue("hello" in inv_index, "index hello is not created")
-    posting_ids = [elem.doc_id for elem in inv_index["hello"].get_first_n_occurances(0)]
+    posting_ids = [elem.doc_id for elem in inv_index["hello"].get_first_n_occurances(-1)]
     log.debug("Inverted Index shall have the expected terms set correctly")
     self.assertListEqual(posting_ids, [id1], "index hello is not set correctly")
 
     log.debug("Inverted Index shall have the expected terms")
     self.assertTrue("test" in inv_index, "index test is not created")
-    posting_ids = [elem.doc_id for elem in inv_index["test"].get_first_n_occurances(0)]
+    posting_ids = [elem.doc_id for elem in inv_index["test"].get_first_n_occurances(-1)]
     # the docs shall get sorted, thus id2 shall preceed id1
     log.debug("Inverted Index shall have the expected terms set correctly")
     self.assertListEqual(posting_ids, [id2, id1], "index test is not set in order, thus sorted based searching would fail")

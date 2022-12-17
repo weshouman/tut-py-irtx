@@ -159,7 +159,7 @@ class LinkedList():
     node = self.head
     i = 0
     while node is not None:
-      if i >= count and count > 0:
+      if i >= count and count >= 0:
         break
       if (i >= start):
         l.append(node.data)
@@ -179,7 +179,7 @@ class LinkedList():
 
     i = 0
     while node.next is not None:
-      if i >= count-1 and count > 0:
+      if i >= count-1 and count >= 0:
         break
       node = node.next
       nodenew.next = node.copy()

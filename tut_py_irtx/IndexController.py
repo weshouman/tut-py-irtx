@@ -228,12 +228,12 @@ class IndexController():
             # posting_ids = [posting.doc_id for posting in term.occurances]
             # we don't use term.occurances directly for text_docs,
             # as the occurances(Posting type) is not hashable, which should be the case
-            text_docs = get_joint(text_docs, term.get_first_n_occurances(0))
+            text_docs = get_joint(text_docs, term.get_first_n_occurances(-1))
 
       else:
         term = ii.get_corresponding_term(util.normalize(text))
         if term is not None:
-          text_docs = term.get_first_n_occurances(0)
+          text_docs = term.get_first_n_occurances(-1)
 
       # enable for extensive debugging only
       # logging.debug(f"[{text}] found in the docs: {text_docs}")
