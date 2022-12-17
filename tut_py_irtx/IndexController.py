@@ -243,7 +243,7 @@ class IndexController():
       else:
         out_docs = get_intersection_of_sorted(sorted(out_docs), sorted(text_docs))
 
-      logging.debug(f"[DOC-INTERSECTION]: {out_docs}")
+      logging.info(f"[DOC-INTERSECTION][TERM:{text}]: {out_docs}")
 
     ranks = []
     if support_ranking:
