@@ -7,3 +7,11 @@ Implementation of Information Retrieval and Text Mining algorithms including:
 - WildCard retrieval
 - Distance calculation
 - Ranking based retrieval (cosine-similarity and tf-idf)
+
+## Contribution Style
+- The tests are run using xmlrunner (following the unittest style).
+- The documentation style is `NumPy/SciPy Docstrings`.
+
+- Extensive Debugging `logging.debug()` calls are commented.
+
+
