@@ -7,6 +7,8 @@ Implementation of Information Retrieval and Text Mining algorithms including:
 - WildCard retrieval
 - Distance calculation
 - Ranking based retrieval (cosine-similarity and tf-idf)
+- Perceptron classification
+- Multiple confusion matrix stats
 
 ## Contribution Style
 - The tests are run using xmlrunner (following the unittest style).
