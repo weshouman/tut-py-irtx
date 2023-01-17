@@ -9,8 +9,8 @@ import xmlrunner
 import tut_py_irtx.lev_dist as lev_dist
 from tests.stub_lev_dist import *
 
-# Update to a doc
-from tut_py_irtx.Instance import *
+from tut_py_irtx.InvertedIndexer import *
+from tut_py_irtx.Doc import *
 from tut_py_irtx.PerceptronClassifier import *
 
 import tut_py_irtx.ClassifierUtil as cu
@@ -25,6 +25,8 @@ def tearDownModule():
 
 class PerceptronTest(unittest.TestCase):
 
+  PREDICTION_MAP = {"pos": 1, "neg": -1}
+
   @classmethod
   def setUpClass(cls):
     """Triggered before all class tests"""
@@ -37,13 +39,13 @@ class PerceptronTest(unittest.TestCase):
   def parse_csv_reviews(filename):
     reader = csv.reader(open(filename, 'r'), delimiter="\t")
 
-    prediction_map = {"pos": 1, "neg": -1}
+    pred_map = PerceptronTest.PREDICTION_MAP
 
     return [ \
-             Instance( \
+             Doc( \
                index=i, \
                text=row[1], \
-               labels=[prediction_map[row[0]]], \
+               labels=[pred_map[row[0]]], \
              ) for i, row in enumerate(reader)]
 
   def get_confusion_matrix(instances):
@@ -65,8 +67,24 @@ class PerceptronTest(unittest.TestCase):
   #   ax.set_yticklabels(['', 'positive', 'negative'])
   #   ax.set_title(classifier_name)
 
+  def summarize_weights_inv_index(pc, inv_index, texts):
+    out  = "\nWord           | Appearances | Weight\n"
+    out += "---------------------------------\n"
+    for text in texts:
+      out += f"{text:14} | {inv_index[text].count:11} | {round(pc.weights[text], 2)}\n"
+
+    return out
+
+  def summarize_weights_terms(pc, terms):
+    out  = "\nWord           | Appearances | Weight\n"
+    out += "---------------------------------\n"
+    for term in terms:
+      out += f"{term.text:14} | {term.count:11} | {round(pc.weights[term.text], 2)}\n"
+
+    return out
+
   # @unittest.skip("WIP")
-  def test01_semantics_read_data(self):
+  def test01_train_and_predict(self):
     """The data is correctly read"""
 
     train_file = "tests/stub_semantics_train.csv"
@@ -97,9 +115,39 @@ class PerceptronTest(unittest.TestCase):
 
     cmatrix = PerceptronTest.get_confusion_matrix(test_instances)
 
-    print(cu.visualize_cmatrix(cmatrix))
+    pred_map = PerceptronTest.PREDICTION_MAP
+    print("Confusion matrix")
+    print("-----------------------")
+    print(cu.visualize_cmatrix(cmatrix, pred_map))
+
+    # show some details
+    ii   = InvertedIndexer(instances)
+
+    inv_index = ii.build()
+
+    # indices_slice = ii.get_slice(10)
+    # print(PerceptronTest.summarize_weights_terms(pc, sorted(indices_slice)))
+
+    print("List of highest weights")
+    print("-----------------------")
+    # print(pc.get_weights_slice(order=-1))
+    texts = pc.get_extreme_weights(order=-1)
+    print(PerceptronTest.summarize_weights_inv_index(pc, inv_index, texts))
+      
+    print("List of least weights")
+    print("---------------------")
+    # print(pc.get_weights_slice(order=1))
+    texts = pc.get_extreme_weights(order=1)
+    print(PerceptronTest.summarize_weights_inv_index(pc, inv_index, texts))
+
+    
+    print("Evaluation stats")
+    print("----------------")
+    print(cu.visualize_tps(cmatrix, pred_map))
+    print(cu.visualize_fps(cmatrix, pred_map))
+    print(cu.visualize_tns(cmatrix, pred_map))
+
     print(f"f1score: {str(cu.get_f1score(cmatrix))}")
-    print(pc.get_weights_slice())
 
   def test02_confusion_matrix_2labels_single_target(self):
     """Correct confusion matrix calculation for 2 labels"""
@@ -147,7 +195,7 @@ class PerceptronTest(unittest.TestCase):
     cmatrix = cu.get_confusion_matrix(ys, yhats, True)
 
     self.assertEqual(cu.visualize_cmatrix(cmatrix), """
-                   0          1 NOT_CAT   
+                   0          1    NOT_CAT
        0|          2          1          0 
        1|          0          1          1 
 NOT_CAT |          0          1          0 

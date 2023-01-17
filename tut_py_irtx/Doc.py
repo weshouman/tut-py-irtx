@@ -4,11 +4,15 @@ from tut_py_irtx.Posting import *
 class Doc():
   """A document is a representation of the structured form
      that the code retrieves info from"""
-  def __init__(self, index="0", author_id="", text="", timestamp=""):
+  def __init__(self, index="0", author_id="", text="", timestamp="", labels=None):
     self.index = index
     self.author_id = author_id
     self.text = text
     self.timestamp = timestamp
+
+    self.labels = [] if labels is None else labels
+
+    self.predicted_labels = []
 
   def __lt__(self, other):
     return self.index < other.index

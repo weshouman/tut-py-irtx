@@ -117,19 +117,56 @@ def get_confusion_matrix(ys, yhats, support_not_categorized=False):
 
   return cm
 
-def visualize_cmatrix(cmatrix):
+def get_mapped_labels(labels, label_map):
+  """
+  Transform the given ordered labels to an ordered label_map based on the
+  given unordered label_map
+
+  Parameters
+  ----------
+  labels : []
+    list of labels as seen in a cmatrix
+
+  label_map : dict
+    dict of friendly names of labels, along with the value of each,
+    as seen in the cmatrix
+
+  Returns
+  -------
+  ordered_label_map : dict
+    dict of friendly names of labels, along with the value of each,
+    as seen in the cmatrix, with the correct order of the cmatrix
+
+    If label_map is None, the labels are used as friendly names
+  """
+  ordered_label_map = {}
+  if label_map is not None:
+    for l in labels:
+      for key in label_map.keys():
+        if l == label_map[key]:
+          ordered_label_map.setdefault(key, l)
+          continue
+  else:
+    for l in labels:
+      ordered_label_map.setdefault(l, l)
+
+  return ordered_label_map
+
+def visualize_cmatrix(cmatrix, label_map=None):
   labels = cmatrix.keys()
 
+  ordered_label_map = get_mapped_labels(labels, label_map)
+
   out = f"\n {' ':8}"
-  for l in labels:
-    out += f" {l:10}"
+  for l in ordered_label_map.keys():
+    out += f" {l:>10}"
   out += "\n"
 
-  for l in labels:
+  for l in ordered_label_map.keys():
     out += f"{l:8}| "
-    for subl in labels:
+    for subl in ordered_label_map.keys():
       # out += f"({l},{subl}){cmatrix[l][subl]:5} "
-      out += f"{cmatrix[l][subl]:10} "
+      out += f"{cmatrix[ordered_label_map[l]][ordered_label_map[subl]]:10} "
     out += "\n"
   return out
 
@@ -183,3 +220,45 @@ def get_f1score(cmatrix):
     return 0
 
   return (2 * precision * recall) / (precision + recall)
+
+def visualize_tps(cmatrix, label_map=None):
+  """Visualize true positives"""
+  labels = cmatrix.keys()
+
+  ordered_label_map = get_mapped_labels(labels, label_map)
+
+  out = "true-positives:\n"
+  for current in ordered_label_map.keys():
+    out += f"  - {current}: {cmatrix[ordered_label_map[current]][ordered_label_map[current]]}\n"
+
+  return out
+
+def visualize_fps(cmatrix, label_map=None):
+  """Visualize false positives"""
+  labels = cmatrix.keys()
+
+  ordered_label_map = get_mapped_labels(labels, label_map)
+
+  out = "false-positivess:\n"
+  for current in ordered_label_map.keys():
+    out += f"  - {current}:\n"
+    for other in ordered_label_map.keys():
+      if current != other:
+        out += f"    - {other}: {cmatrix[ordered_label_map[other]][ordered_label_map[current]]}\n"
+
+  return out
+
+def visualize_tns(cmatrix, label_map=None):
+  """Visualize true negatives"""
+  labels = cmatrix.keys()
+
+  ordered_label_map = get_mapped_labels(labels, label_map)
+
+  out = "true-negatives:\n"
+  for current in ordered_label_map.keys():
+    out += f"  - {current}:\n"
+    for other in ordered_label_map.keys():
+      if current != other:
+        out += f"    - {other}: {cmatrix[ordered_label_map[current]][ordered_label_map[other]]}\n"
+
+  return out
