@@ -8,7 +8,7 @@ class Term():
   def __init__(self, text, occurances=None, hot_load=True):
     self.text = Term.normalize(text)
 
-    self.buffer = occurances
+    self.buffer = [] if occurances is None else occurances
     self.hot_load = hot_load
     self.populated = False
 
