@@ -37,11 +37,13 @@ class PerceptronTest(unittest.TestCase):
   def parse_csv_reviews(filename):
     reader = csv.reader(open(filename, 'r'), delimiter="\t")
 
+    prediction_map = {"pos": 1, "neg": -1}
+
     return [ \
              Instance( \
                index=i, \
                text=row[1], \
-               labels=[row[0]], \
+               labels=[prediction_map[row[0]]], \
              ) for i, row in enumerate(reader)]
 
   def get_confusion_matrix(instances):
@@ -97,6 +99,7 @@ class PerceptronTest(unittest.TestCase):
 
     print(cu.visualize_cmatrix(cmatrix))
     print(f"f1score: {str(cu.get_f1score(cmatrix))}")
+    print(pc.get_weights_slice())
 
   def test02_confusion_matrix_2labels_single_target(self):
     """Correct confusion matrix calculation for 2 labels"""

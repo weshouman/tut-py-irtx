@@ -177,4 +177,9 @@ def get_f1score(cmatrix):
   precision = sum(get_precisions(cmatrix).values())/count
   recall = sum(get_recalls(cmatrix).values())/count
 
+  if (precision + recall) == 0:
+    logging.error("The classifier got 0 precision and 0 recall!\
+      The labels could be inverted")
+    return 0
+
   return (2 * precision * recall) / (precision + recall)
