@@ -162,7 +162,7 @@ class PerceptronTest(unittest.TestCase):
     self.assertEqual(cmatrix[1][1], 2)
 
   def test03_confusion_matrix_2labels_single_target_vis(self):
-    """Correct confusion matrix calculation for 2 labels"""
+    """Correct confusion matrix calculation for 2 labels, single target"""
     ys    = [[0], [1], [1], [0], [1]]
     yhats = [[0], [1], [0], [1], [1]]
 
@@ -175,7 +175,7 @@ class PerceptronTest(unittest.TestCase):
 """)
 
   def test04_confusion_matrix_2labels_multi_target(self):
-    """Correct confusion matrix calculation for 2 labels"""
+    """Correct confusion matrix calculation for 2 labels, multiple targets"""
     ys    = [[0,1], [1], [0]  , [0]]
     yhats = [[0]  , [1], [0,1], [1]]
 
@@ -188,7 +188,7 @@ class PerceptronTest(unittest.TestCase):
 """)
 
   def test05_confusion_matrix_2labels_multi_target_NOT_CAT(self):
-    """Correct confusion matrix calculation for 2 labels"""
+    """Correct confusion matrix calculation for 2 labels multiple targets, with non_categorized detection"""
     ys    = [[0,1], [1], [0]  , [0]]
     yhats = [[0]  , [1], [0,1], [1]]
 
@@ -202,7 +202,7 @@ NOT_CAT |          0          1          0
 """)
 
   def test06_confusion_matrix_4labels_multi_target(self):
-    """Correct confusion matrix calculation for 2 labels"""
+    """Correct confusion matrix calculation for 4 labels, multi targets"""
     ys    = [[0,1], [1], [3]  , [0]]
     yhats = [[0]  , [4], [0,1], [1]]
 
@@ -217,7 +217,7 @@ NOT_CAT |          0          1          0
 """)
 
   def test07_f1score_2labels_single_target(self):
-    """Correct confusion matrix calculation for 2 labels"""
+    """Correct f1score calculation for 2 labels, single target no visualization"""
     ys    = [[0], [1], [1], [0], [0], [1]]
     yhats = [[0], [1], [0], [1], [1], [1]]
 
@@ -232,8 +232,8 @@ NOT_CAT |          0          1          0
     self.assertEqual(f1score, 0.5)
 
   @unittest.skip("extreme example")
-  def test08_f1score_2labels_4labels_multi_target(self):
-    """Correct confusion matrix calculation for 2 labels"""
+  def test08_f1score_4labels_multi_target(self):
+    """Correct f1score calculation for 4 labels, multi targets"""
     ys    = [[0,1], [1], [3]  , [0]]
     yhats = [[0]  , [4], [0,1], [1]]
 
