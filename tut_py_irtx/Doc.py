@@ -14,11 +14,15 @@ class Doc():
 
     self.predicted_labels = []
 
+    # Used for Clustering, as each doc should have dimensions corresponding to
+    # included terms
+    self.values = []
+
   def __lt__(self, other):
     return self.index < other.index
 
   def __str__(self):
-    out  = self.index
+    out  = f"{self.index}"
     out += f" \tauthored by {self.author_id}" if self.author_id else ""
     out += f" \tat {self.timestamp}"          if self.timestamp else ""
     return out

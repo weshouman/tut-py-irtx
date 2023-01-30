@@ -19,6 +19,10 @@ class Term():
 
     self.idf = 0
 
+    # Used for Clustering, as each term should represent a dimension
+    # known by this order
+    self.order = 0
+
   verbose = False
   DEFAULT_VERBOSE_OCCURANCE_COUNT = 3
 
